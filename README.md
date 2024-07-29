@@ -1,5 +1,7 @@
 # doppler-radar-ml
 Doppler Radar ML
+- see https://github.com/ObrienlabsDev/biometric-backend/issues
+- see https://github.com/ObrienlabsDev/biometric-backend-python/issues
 ## Use Case
 15 years of 500k 2k images from a doppler radar station will be processed and used to train an deep neural network that will be used to generate future radar images.
 
