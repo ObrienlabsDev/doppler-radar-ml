@@ -4,7 +4,9 @@
 # - https://weather.gc.ca/satellite/index_e.html
 # - NA https://weather.gc.ca/data/satellite/goes_nam_1070_100.jpg
 
+import os
 import requests
+
 
 # global variables
 data_dir = "/Users/michaelobrien/data/satellite/"
@@ -22,6 +24,10 @@ def download_image(url_prefix, url, url_postfix, filename):
     except requests.exceptions.RequestException as e:
         print(f"exception on {filename} : {url}: {e}")
 
+def prepare_directory():
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
 # main method
 if __name__ == "__main__":
     # URLs to download
@@ -34,6 +40,7 @@ if __name__ == "__main__":
         "hrpt_ont1_ir_100"
     ]
 
+    prepare_directory()
     # iterate the urls list
     for i, url in enumerate(urls):
         download_image(url_prefix, url, url_postfix, f"{url}{url_postfix}")
