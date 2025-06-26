@@ -6,11 +6,16 @@
 
 import requests
 
+# global variables
+data_dir = "/Users/michaelobrien/data/satellite/"
+
+
 def download_image(url_prefix, url, url_postfix, filename):
     try:
         response = requests.get(url_prefix + url + url_postfix, stream = True)
         response.raise_for_status()  # Check for HTTP errors
-        with open(filename, 'wb') as file:
+        filepath = data_dir + filename
+        with open(filepath, 'wb') as file:
             for part in response.iter_content(chunk_size=2048):
                 file.write(part)
         print(f"{filename} : {url}")
@@ -41,3 +46,4 @@ if __name__ == "__main__":
 
 # history
 # 2025-06-25: Initial version - 
+# add timestamp
