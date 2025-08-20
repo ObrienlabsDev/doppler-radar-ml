@@ -2,7 +2,11 @@
 Doppler Radar ML
 - see https://github.com/ObrienlabsDev/biometric-backend/issues
 - see https://github.com/ObrienlabsDev/biometric-backend-python/issues
-## Use Case
+
+## Historical Radar Data
+- https://climate.weather.gc.ca/radar/index_e.html
+- 
+## Use Cases
 15 years of 500k 2k images from a doppler radar station will be processed and used to train an deep neural network that will be used to generate future radar images.
 
 ## Design Issues
