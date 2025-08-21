@@ -6,10 +6,60 @@ Doppler Radar ML
 ## Historical Radar Data
 - https://climate.weather.gc.ca/radar/index_e.html
 - https://eccc-msc.github.io/open-data/msc-data/obs_radar/readme_radarimage-datamart_en/
+
 ## Use Cases
 15 years of 500k 2k images from a doppler radar station will be processed and used to train an deep neural network that will be used to generate future radar images.
 
+## Design
+  As of 20250821 the ECC site has added an easier way to capture live radar data.  Instead of parsing the consumer site we can go directly to the ecc server and it's secondary. 
+  These exist on the following sites - see https://github.com/ObrienlabsDev/doppler-radar-ml/issues/7
+  
+  Analyse
+  
+https://eccc-msc.github.io/open-data/readme_en/
+
+https://eccc-msc.github.io/open-data/msc-datamart/readme_en/
+
+primary
+
+https://dd.weather.gc.ca/today/
+
+10x speed (auth)
+
+https://hpfx.collab.science.gc.ca/
+
+  We will create a scheduled service to compute the date for the today folder, for example
+
+```  
+https://dd.weather.gc.ca/today/radar/CAPPI/GIF/CASFT/202508211800_CASFT_CAPPI_1.5_RAIN.gif 
+
+computed as BASE_URL https://dd.weather.gc.ca/today/radar
+
+DBQPE OR CAPPI
+
+GIF
+
+site = CASFT (franktown - the older xft)
+
+date = 20250821
+
+time = 1800 (intervals are 6 min from 00)
+
+site = as above = CASFT
+
+type = 1.5
+
+precif = RAIN
+
+.gif
+
+```
+
+  
+  
+
 ## Design Issues
+
 ### DI01: Base64 encoding added to historical site
 example: https://climate.weather.gc.ca/radar/index_e.html?site=CASFT&year=2024&month=4&day=6&hour=01&minute=54&duration=2&image_type=DPQPE_RAIN_WEATHEROFFICE
 ```
@@ -47,5 +97,6 @@ example: https://climate.weather.gc.ca/radar/index_e.html?site=CASFT&year=2024&m
 </script>
 
 ```
+
 ## References
 - Older Java based project - https://github.com/obrienlabs/radar
