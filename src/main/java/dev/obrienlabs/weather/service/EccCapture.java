@@ -14,22 +14,29 @@ public class EccCapture {
 	public static String BASE_URL = "https://dd.weather.gc.ca/";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static String CLOUD_STORAGE_URL = "";
-	public static String CS_BUCKET_NAME = "doppler1_old";
+	public static String GCS_BUCKET_NAME = "doppler1_old";
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
 	
     public EccCapture() {
-    	// authentication will be handled by ENV variables
+    	// authentication will be handled by ENV variables starting with GOOGLE_APPLICATION_CREDENTIALS
     	// restart eclipse after running
     	// gcloud auth application-default login
     	// gcloud config set project doppler-radar-old 
     	// gcloud auth application-default set-quota-project doppler-radar-old
+    	// gcloud services enable cloudbilling.googleapis.com
+    	// PROJ=$(gcloud config list --format 'value(core.project)') 
+    	// export ORGANIZATION_ID=$(gcloud projects get-ancestors $PROJECT_ID --format='get(id)' | tail -1)
+    	// export PROJECT_ID=$(gcloud config list --format 'value(core.project)') 
+    	// export ORGANIZATION_ID=$(gcloud projects get-ancestors $PROJECT_ID --format='get(id)' | tail -1)
+    	// export BILLING_ID=$(gcloud alpha billing projects describe $PROJECT_ID '--format=value(billingAccountName)' | sed 's/.*\///')
+    	// USER_EMAIL=`gcloud config list account --format "value(core.account)"`
     	this.storage = StorageOptions.getDefaultInstance().getService();
     }
 	// poc - pull from today directory once
 	public void capture() {
-		createBucket(CS_BUCKET_NAME);
+		createGCSBucket(GCS_BUCKET_NAME);
 	}
 	
 	
@@ -38,7 +45,7 @@ public class EccCapture {
 	 * @param bucketName
 	 * @return
 	 */
-    public Bucket createBucket(String bucketName) {
+    public Bucket createGCSBucket(String bucketName) {
         try {
         	// check project id first
             Bucket existingBucket = storage.get(bucketName);
@@ -65,6 +72,18 @@ public class EccCapture {
             logger.log(Level.SEVERE, "Error bucket " + bucketName + ": " + e.getMessage(), e);
             return null;
         }
+    }
+    
+    public void uploadImage() {
+    	
+    }
+    
+    public void downloadImage(String urlPostfix) {
+    	
+    }
+    
+    public void downloadAllImagesFromFolder(String folderName) {
+    	
     }
 	
 	// setup HttpClient
