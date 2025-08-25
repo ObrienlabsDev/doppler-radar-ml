@@ -1,6 +1,67 @@
 package dev.obrienlabs.weather.service;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageClass;
+import com.google.cloud.storage.StorageOptions;
+
 public class EccCapture {
+	
+	public static String BASE_URL = "https://dd.weather.gc.ca/";
+	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
+	public static String CLOUD_STORAGE_URL = "";
+	public static String CS_BUCKET_NAME = "doppler1_old";
+		
+    private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
+    private final Storage storage;
+	
+    public EccCapture() {
+    	// authentication will be handled by ENV variables
+    	// restart eclipse after running
+    	// gcloud auth application-default login
+    	this.storage = StorageOptions.getDefaultInstance().getService();
+    }
+	// poc - pull from today directory once
+	public void capture() {
+		createBucket(CS_BUCKET_NAME);
+	}
+	
+	
+	/**
+	 * Create bucket if not already existing
+	 * @param bucketName
+	 * @return
+	 */
+    public Bucket createBucket(String bucketName) {
+        try {
+            Bucket existingBucket = storage.get(bucketName);
+            if (existingBucket != null) {
+                logger.log(Level.INFO, "Bucket {0} already exists", bucketName);
+                return existingBucket;
+            }
+
+            BucketInfo bucketInfo = BucketInfo.newBuilder(bucketName)
+                    .setLocation("northamerica-northeast1")
+                    .setStorageClass(StorageClass.STANDARD)
+                    .build();
+
+            // Create the bucket.
+            Bucket newBucket = storage.create(bucketInfo);
+            logger.log(Level.INFO, "Bucket {0} created successfully", bucketName);
+            return newBucket;
+
+        } catch (com.google.cloud.storage.StorageException e) {
+            logger.log(Level.SEVERE, "Error creating bucket " + bucketName + ": " + e.getMessage(), e);
+            return null;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error bucket " + bucketName + ": " + e.getMessage(), e);
+            return null;
+        }
+    }
 	
 	// setup HttpClient
 	
@@ -63,6 +124,7 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
+		eccCapture.capture();
 		System.out.println(eccCapture);
 	}
 }
