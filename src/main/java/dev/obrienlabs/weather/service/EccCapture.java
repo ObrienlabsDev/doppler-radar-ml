@@ -23,6 +23,8 @@ public class EccCapture {
     	// authentication will be handled by ENV variables
     	// restart eclipse after running
     	// gcloud auth application-default login
+    	// gcloud config set project doppler-radar-old 
+    	// gcloud auth application-default set-quota-project doppler-radar-old
     	this.storage = StorageOptions.getDefaultInstance().getService();
     }
 	// poc - pull from today directory once
@@ -38,6 +40,7 @@ public class EccCapture {
 	 */
     public Bucket createBucket(String bucketName) {
         try {
+        	// check project id first
             Bucket existingBucket = storage.get(bucketName);
             if (existingBucket != null) {
                 logger.log(Level.INFO, "Bucket {0} already exists", bucketName);
@@ -52,6 +55,7 @@ public class EccCapture {
             // Create the bucket.
             Bucket newBucket = storage.create(bucketInfo);
             logger.log(Level.INFO, "Bucket {0} created successfully", bucketName);
+            // read it back
             return newBucket;
 
         } catch (com.google.cloud.storage.StorageException e) {
