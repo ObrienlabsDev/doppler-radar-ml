@@ -1,5 +1,17 @@
 package dev.obrienlabs.weather.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,6 +21,9 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
 import com.google.cloud.storage.StorageOptions;
 
+/**
+ * https://github.com/ObrienlabsDev/doppler-radar-ml/issues/7
+ */
 public class EccCapture {
 	
 	public static String BASE_URL = "https://dd.weather.gc.ca/";
@@ -35,10 +50,16 @@ public class EccCapture {
     	this.storage = StorageOptions.getDefaultInstance().getService();
     }
 	// poc - pull from today directory once
-	public void capture() {
-		createGCSBucket(GCS_BUCKET_NAME);
+	public void capture() throws IOException, InterruptedException {
+		//createGCSBucket(GCS_BUCKET_NAME);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
+		// GMT-4 check DST - align to 00+6min intervals
+		LocalDateTime offsetTime = LocalDateTime.now().minusMinutes(0).plusHours(4);
+		String formattedDateTime = offsetTime.format(formatter);
+		String urlPostfix = "today/radar/CAPPI/GIF/CASFT/" + formattedDateTime + "00_CASFT_CAPPI_1.5_RAIN.gif";
+		System.out.println("Capturing: " + urlPostfix);
+		captureImage(BASE_URL + urlPostfix);
 	}
-	
 	
 	/**
 	 * Create bucket if not already existing
@@ -59,10 +80,8 @@ public class EccCapture {
                     .setStorageClass(StorageClass.STANDARD)
                     .build();
 
-            // Create the bucket.
             Bucket newBucket = storage.create(bucketInfo);
             logger.log(Level.INFO, "Bucket {0} created successfully", bucketName);
-            // read it back
             return newBucket;
 
         } catch (com.google.cloud.storage.StorageException e) {
@@ -78,9 +97,39 @@ public class EccCapture {
     	
     }
     
-    public void downloadImage(String urlPostfix) {
-    	
+    public void captureImage(String baseUrl) throws IOException, InterruptedException {
+    	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
+    	Path target = Path.of(".", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
+
+        Thread.sleep(5000);
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl))
+                .header("User-Agent", "obrienlabs-EccCapture/0.9 (+java.net.http)")
+                .timeout(Duration.ofMinutes(1))
+                .GET()
+                .build();
+
+        HttpResponse<InputStream> response =
+                client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+        int status = response.statusCode();
+        if (status < 200 || status >= 300) {
+            throw new IOException("HTTP " + status + " while downloading " + baseUrl);
+        }
+
+        if (target.getParent() != null) {
+            Files.createDirectories(target.getParent());
+        }
+
+        try (InputStream in = response.body()) {
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
+
     
     public void downloadAllImagesFromFolder(String folderName) {
     	
@@ -147,7 +196,11 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		eccCapture.capture();
+		try {
+			eccCapture.capture();
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 		System.out.println(eccCapture);
 	}
 }
