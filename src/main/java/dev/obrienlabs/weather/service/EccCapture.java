@@ -30,6 +30,7 @@ public class EccCapture {
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static String CLOUD_STORAGE_URL = "";
 	public static String GCS_BUCKET_NAME = "doppler1_old";
+	public static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
@@ -52,13 +53,30 @@ public class EccCapture {
 	// poc - pull from today directory once
 	public void capture() throws IOException, InterruptedException {
 		//createGCSBucket(GCS_BUCKET_NAME);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
+		captureImage(BASE_URL + computePostfixUrl());
+	}
+	
+	private String computePostfixUrl() {
+		StringBuffer buffer = new StringBuffer();
 		// GMT-4 check DST - align to 00+6min intervals
 		LocalDateTime offsetTime = LocalDateTime.now().minusMinutes(0).plusHours(4);
-		String formattedDateTime = offsetTime.format(formatter);
-		String urlPostfix = "today/radar/CAPPI/GIF/CASFT/" + formattedDateTime + "00_CASFT_CAPPI_1.5_RAIN.gif";
+		String formattedDateTime = offsetTime.format(DATE_TIME_FORMATTER);
+		String urlPostfix = buffer.append("today/radar/CAPPI/GIF/CASFT/")
+				.append(formattedDateTime)
+				.append(getSixMinuteTrailingOffsetMinute(offsetTime.getMinute()))
+				.append("_CASFT_CAPPI_1.5_RAIN.gif").toString();
 		System.out.println("Capturing: " + urlPostfix);
-		captureImage(BASE_URL + urlPostfix);
+		return urlPostfix;
+	}
+	
+	/**
+	 * Compute the 6 min trailing offset (0,6,12,18,24,30,36,42,48,54) from the current minute.
+	 * Return as padded 06 for example
+	 * @param minute
+	 * @return
+	 */
+	private String getSixMinuteTrailingOffsetMinute(int minute) {
+		return "06";
 	}
 	
 	/**
@@ -108,7 +126,7 @@ public class EccCapture {
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl))
-                .header("User-Agent", "obrienlabs-EccCapture/0.9 (+java.net.http)")
+                .header("User-Agent", "michael-at-obrienlabs-dev/0.9 (+java.net.http)")
                 .timeout(Duration.ofMinutes(1))
                 .GET()
                 .build();
