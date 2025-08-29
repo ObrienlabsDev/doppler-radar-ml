@@ -38,6 +38,7 @@ public class EccCapture {
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
 	private static final Random RANDOM = new Random();
 	private static final long MIN_RANDOM = 5000L;
+	private static final int RADAR_MIN_RESOLUTION = 6;
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
@@ -91,7 +92,10 @@ public class EccCapture {
 	 * @return
 	 */
 	private String getSixMinuteTrailingOffsetMinute(int minute) {
-		return "00";
+		int _trailingMinute = minute / RADAR_MIN_RESOLUTION;
+		// convert to String with prefix 0
+		Integer.toString(minute, _trailingMinute)
+		return _trailingMinute;
 	}
 	
 
@@ -215,10 +219,12 @@ https://hpfx.collab.science.gc.ca/
 
 ```  
 https://dd.weather.gc.ca/today/radar/CAPPI/GIF/CASFT/202508211800_CASFT_CAPPI_1.5_RAIN.gif 
+  
 
 computed as BASE_URL https://dd.weather.gc.ca/today/radar
 
 DBQPE OR CAPPI
+20250829T0000Z_MSC_Radar-DPQPE_CASFT_Rain.gif
 
 GIF
 
