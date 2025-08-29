@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Random;
 
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
@@ -27,10 +28,16 @@ import com.google.cloud.storage.StorageOptions;
 public class EccCapture {
 	
 	public static String BASE_URL = "https://dd.weather.gc.ca/";
+	private static String USER_AGENT = "michael-at-obrienlabs-dev/0.9 (+java.net.http)";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static String CLOUD_STORAGE_URL = "";
 	public static String GCS_BUCKET_NAME = "doppler1_old";
-	public static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
+	
+	public static String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
+	public static String[] SITE_L2_ID = { "CASFT" };
+	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
+	private static final Random RANDOM = new Random();
+	private static final long MIN_RANDOM = 5000L;
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
@@ -53,32 +60,107 @@ public class EccCapture {
 	// poc - pull from today directory once
 	public void capture() throws IOException, InterruptedException {
 		//createGCSBucket(GCS_BUCKET_NAME);
-		captureImage(BASE_URL + computePostfixUrl());
+		captureImage(BASE_URL + computePostfixUrl(0, 0));
 	}
 	
-	private String computePostfixUrl() {
+	private String computePostfixUrl(int siteID, int cappiID) {
 		StringBuffer buffer = new StringBuffer();
 		// GMT-4 check DST - align to 00+6min intervals
 		LocalDateTime offsetTime = LocalDateTime.now().minusMinutes(0).plusHours(4);
 		String formattedDateTime = offsetTime.format(DATE_TIME_FORMATTER);
-		String urlPostfix = buffer.append("today/radar/CAPPI/GIF/CASFT/")
+		String urlPostfix = buffer.append("today/radar/")
+				.append(CAPPI_DPQPE_L3_ID[cappiID])
+				.append("/GIF/")
+				.append(SITE_L2_ID[siteID])
+				.append("/")
 				.append(formattedDateTime)
 				.append(getSixMinuteTrailingOffsetMinute(offsetTime.getMinute()))
-				.append("_CASFT_CAPPI_1.5_RAIN.gif").toString();
-		System.out.println("Capturing: " + urlPostfix);
+				.append("_")
+				.append(SITE_L2_ID[siteID])
+				.append("_")
+				.append(CAPPI_DPQPE_L3_ID[cappiID])
+				.append("_")
+				.append("1.5_RAIN.gif").toString();
 		return urlPostfix;
 	}
 	
 	/**
 	 * Compute the 6 min trailing offset (0,6,12,18,24,30,36,42,48,54) from the current minute.
-	 * Return as padded 06 for example
+	 * Return as padded 06 for minute 9 for example
 	 * @param minute
 	 * @return
 	 */
 	private String getSixMinuteTrailingOffsetMinute(int minute) {
-		return "06";
+		return "00";
 	}
 	
+
+    
+    public void uploadImage() {
+    	
+    }
+    
+    private long random10secDelay() {
+    	long sec = MIN_RANDOM + RANDOM.nextLong(MIN_RANDOM);
+    	System.out.print(String.format("wait %d sec - ", sec));
+    	try {
+    		Thread.sleep(sec);
+    	} catch (Exception e) {
+    	}
+        return sec;
+    }
+    
+    public void captureImage(String fullUrl) throws IOException, InterruptedException {
+    	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
+    	Path target = Path.of(".", Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+    	
+    	
+    	random10secDelay();
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(fullUrl))
+                .header("User-Agent", USER_AGENT)
+                .timeout(Duration.ofMinutes(1))
+                .GET()
+                .build();
+
+        HttpResponse<InputStream> response =
+                client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+        int status = response.statusCode();
+        if (status < 200 || status >= 300) {
+            throw new IOException("HTTP " + status + " while downloading " + fullUrl);
+        }
+
+        if (target.getParent() != null) {
+            Files.createDirectories(target.getParent());
+        }
+
+        try (InputStream in = response.body()) {
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+		System.out.println(" Captured: " + fullUrl);
+    }
+
+    
+    public void downloadAllImagesFromFolder(String folderName) {
+    	
+    }
+	
+	// setup HttpClient
+	
+	// compute url (don't parse the directory)
+	
+	// schedule for every 6 min with offset 2 min from 00
+	
+	// iterate across all radar sites with 5-10 sec random delay - don't overload and don't look like a robot
+	
+	// save images in mirror subfolders
+	
+
 	/**
 	 * Create bucket if not already existing
 	 * @param bucketName
@@ -110,60 +192,6 @@ public class EccCapture {
             return null;
         }
     }
-    
-    public void uploadImage() {
-    	
-    }
-    
-    public void captureImage(String baseUrl) throws IOException, InterruptedException {
-    	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
-    	Path target = Path.of(".", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
-
-        Thread.sleep(5000);
-        HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.ALWAYS)
-                .connectTimeout(Duration.ofSeconds(15))
-                .build();
-
-        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl))
-                .header("User-Agent", "michael-at-obrienlabs-dev/0.9 (+java.net.http)")
-                .timeout(Duration.ofMinutes(1))
-                .GET()
-                .build();
-
-        HttpResponse<InputStream> response =
-                client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-        int status = response.statusCode();
-        if (status < 200 || status >= 300) {
-            throw new IOException("HTTP " + status + " while downloading " + baseUrl);
-        }
-
-        if (target.getParent() != null) {
-            Files.createDirectories(target.getParent());
-        }
-
-        try (InputStream in = response.body()) {
-            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-
-    
-    public void downloadAllImagesFromFolder(String folderName) {
-    	
-    }
-	
-	// setup HttpClient
-	
-	// compute url (don't parse the directory)
-	
-	// schedule for every 6 min with offset 2 min from 00
-	
-	// iterate across all radar sites with 5-10 sec random delay - don't overload and don't look like a robot
-	
-	// save images in mirror subfolders
-	
-
 	
 /**
  *   As of 20250821 the ECC site has added an easier way to capture live radar data.  Instead of parsing the consumer site we can go directly to the ecc server and it's secondary. 
