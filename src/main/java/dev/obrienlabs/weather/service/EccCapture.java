@@ -92,13 +92,11 @@ public class EccCapture {
 	 * @return
 	 */
 	private String getSixMinuteTrailingOffsetMinute(int minute) {
-		int _trailingMinute = minute / RADAR_MIN_RESOLUTION;
+		int _trailingMinute = (minute / RADAR_MIN_RESOLUTION) * RADAR_MIN_RESOLUTION;
 		// convert to String with prefix 0
-		Integer.toString(minute, _trailingMinute)
-		return _trailingMinute;
+		String postfix = Integer.toString(_trailingMinute);
+		return postfix.length() > 1 ? postfix : "0" + postfix;
 	}
-	
-
     
     public void uploadImage() {
     	
