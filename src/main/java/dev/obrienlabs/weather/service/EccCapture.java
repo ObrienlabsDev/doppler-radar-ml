@@ -64,8 +64,8 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			captureImage(BASE_URL + computePostfixUrl(0, 0));
-	    	try {
-	    		Thread.sleep(60000 * 6);
+	    	try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
+	    		Thread.sleep(60000 * 5); // waiting 6 min may miss every 6th image
 	    	} catch (Exception e) {
 	    	}
 		}
