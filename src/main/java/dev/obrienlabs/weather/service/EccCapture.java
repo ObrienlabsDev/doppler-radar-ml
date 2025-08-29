@@ -39,6 +39,7 @@ public class EccCapture {
 	private static final Random RANDOM = new Random();
 	private static final long MIN_RANDOM = 5000L;
 	private static final int RADAR_MIN_RESOLUTION = 6;
+	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 3; // the time between current and last image upload
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
@@ -61,7 +62,13 @@ public class EccCapture {
 	// poc - pull from today directory once
 	public void capture() throws IOException, InterruptedException {
 		//createGCSBucket(GCS_BUCKET_NAME);
-		captureImage(BASE_URL + computePostfixUrl(0, 0));
+		for(;;) {
+			captureImage(BASE_URL + computePostfixUrl(0, 0));
+	    	try {
+	    		Thread.sleep(60000 * 6);
+	    	} catch (Exception e) {
+	    	}
+		}
 	}
 	
 	private String computePostfixUrl(int siteID, int cappiID) {
@@ -93,6 +100,13 @@ public class EccCapture {
 	 */
 	private String getSixMinuteTrailingOffsetMinute(int minute) {
 		int _trailingMinute = (minute / RADAR_MIN_RESOLUTION) * RADAR_MIN_RESOLUTION;
+		if(minute - _trailingMinute < RADAR_MIN_POST_UPLOAD_TIME_MIN) {
+	    	try {
+	    		System.out.print(" sleep 60s ");
+	    		Thread.sleep(60000);
+	    	} catch (Exception e) {
+	    	}
+		}
 		// convert to String with prefix 0
 		String postfix = Integer.toString(_trailingMinute);
 		return postfix.length() > 1 ? postfix : "0" + postfix;
@@ -115,8 +129,7 @@ public class EccCapture {
     public void captureImage(String fullUrl) throws IOException, InterruptedException {
     	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
     	Path target = Path.of(".", Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
-    	
-    	
+    	// check target already exists - exit if
     	random10secDelay();
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.ALWAYS)
