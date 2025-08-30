@@ -38,7 +38,7 @@ public class EccCapture {
 	public static String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
 	private static final Random RANDOM = new Random();
-	private static final long MIN_RANDOM = 5200L;
+	private static final long MIN_RANDOM = 5230L;
 	private static final long MAX_RANDOM = 5000L;
 	private static final int RADAR_MIN_RESOLUTION = 6;
 	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 1; // the time between current and last image upload
