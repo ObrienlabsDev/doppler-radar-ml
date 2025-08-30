@@ -34,15 +34,19 @@ public class EccCapture {
 	public static String GCS_BUCKET_NAME = "doppler1_old";
 	
 	public static String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
-	public static String[] SITE_L2_ID = { "CASFT" };
+	// 30
+	public static String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
 	private static final Random RANDOM = new Random();
-	private static final long MIN_RANDOM = 5000L;
+	private static final long MIN_RANDOM = 5200L;
+	private static final long MAX_RANDOM = 5000L;
 	private static final int RADAR_MIN_RESOLUTION = 6;
-	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 3; // the time between current and last image upload
+	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 1; // the time between current and last image upload
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
+    
+    // add map to track current interval of 30 images
 	
     public EccCapture() {
     	// authentication will be handled by ENV variables starting with GOOGLE_APPLICATION_CREDENTIALS
@@ -59,15 +63,19 @@ public class EccCapture {
     	// USER_EMAIL=`gcloud config list account --format "value(core.account)"`
     	this.storage = StorageOptions.getDefaultInstance().getService();
     }
+    
 	// poc - pull from today directory once
 	public void capture() throws IOException, InterruptedException {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
-			captureImage(BASE_URL + computePostfixUrl(0, 0));
-	    	try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
-	    		Thread.sleep(60000 * 5); // waiting 6 min may miss every 6th image
-	    	} catch (Exception e) {
-	    	}
+			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
+			for(int site=0; site<30; site++) {
+				captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, 0));
+				//try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
+				//	Thread.sleep(60000 * 5); // waiting 6 min may miss every 6th image
+				//} catch (Exception e) {
+				//}
+			}
 		}
 	}
 	
@@ -79,16 +87,19 @@ public class EccCapture {
 		String urlPostfix = buffer.append("today/radar/")
 				.append(CAPPI_DPQPE_L3_ID[cappiID])
 				.append("/GIF/")
+				.append("CAS")
 				.append(SITE_L2_ID[siteID])
 				.append("/")
 				.append(formattedDateTime)
 				.append(getSixMinuteTrailingOffsetMinute(offsetTime.getMinute()))
 				.append("_")
+				.append("CAS")
 				.append(SITE_L2_ID[siteID])
 				.append("_")
 				.append(CAPPI_DPQPE_L3_ID[cappiID])
 				.append("_")
-				.append("1.5_RAIN.gif").toString();
+				.append("1.5_RAIN.gif")
+				.toString();
 		return urlPostfix;
 	}
 	
@@ -117,8 +128,8 @@ public class EccCapture {
     }
     
     private long random10secDelay() {
-    	long sec = MIN_RANDOM + RANDOM.nextLong(MIN_RANDOM);
-    	System.out.print(String.format("wait %d sec - ", sec));
+    	long sec = MIN_RANDOM + RANDOM.nextLong(MAX_RANDOM);
+    	System.out.print(String.format("wait %d ms - ", sec));
     	try {
     		Thread.sleep(sec);
     	} catch (Exception e) {
@@ -126,9 +137,9 @@ public class EccCapture {
         return sec;
     }
     
-    public void captureImage(String fullUrl) throws IOException, InterruptedException {
+    public void captureImage(String site, String fullUrl) throws IOException, InterruptedException {
     	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
-    	Path target = Path.of(".", Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+    	Path target = Path.of("_download/cappi/" + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
     	// check target already exists - exit if
     	random10secDelay();
         HttpClient client = HttpClient.newBuilder()
