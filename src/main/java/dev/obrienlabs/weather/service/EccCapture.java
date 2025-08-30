@@ -27,16 +27,16 @@ import com.google.cloud.storage.StorageOptions;
  */
 public class EccCapture {
 	
-	public static String BASE_URL = "https://dd.weather.gc.ca/";
-	public static String TARGET_DIR = "/Users/michaelobrien/_download/cappi/";
-	private static String USER_AGENT = "michael-at-obrienlabs-dev/0.9 (+java.net.http)";
+	public static final String BASE_URL = "https://dd.weather.gc.ca/";
+	public static final String TARGET_DIR = "/Users/michaelobrien/_download/cappi/";
+	private static final String USER_AGENT = "michael-at-obrienlabs-dev/0.9 (+java.net.http)";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
-	public static String CLOUD_STORAGE_URL = "";
-	public static String GCS_BUCKET_NAME = "doppler1_old";
+	public static final String CLOUD_STORAGE_URL = "";
+	public static final String GCS_BUCKET_NAME = "doppler1_old";
 	
-	public static String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
+	public static final String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
 	// 30
-	public static String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
+	public static final String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");//mm");
 	private static final Random RANDOM = new Random();
 	private static final long MIN_RANDOM = 5230L;
