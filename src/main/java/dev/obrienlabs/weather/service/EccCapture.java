@@ -66,13 +66,18 @@ public class EccCapture {
     }
     
 	// poc - pull from today directory once
-	public void capture() throws IOException, InterruptedException {
+	public void capture() {// throws IOException, InterruptedException {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
 			waitForSixMinuteTrailingOffsetInterval();
 			for(int site=0; site<30; site++) {
+				try {
 				captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, 0));
+				} catch (Exception e) {
+					// particular radar image n/a - skip
+					System.out.println(e);
+				}
 				//try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
 				//	Thread.sleep(60000 * 5); // waiting 6 min may miss every 6th image
 				//} catch (Exception e) {
@@ -159,7 +164,6 @@ public class EccCapture {
     }
     
     public void captureImage(String site, String fullUrl) throws IOException, InterruptedException {
-    	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
     	Path target = Path.of(TARGET_DIR + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
     	// check target already exists - exit if
     	random10secDelay();
@@ -291,11 +295,10 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		try {
+		//try {
 			eccCapture.capture();
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-		System.out.println(eccCapture);
+		//} catch (Exception e) {
+		//	System.out.println(e);
+		//}
 	}
 }
