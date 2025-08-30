@@ -77,6 +77,7 @@ public class EccCapture {
 				} catch (Exception e) {
 					// particular radar image n/a - skip
 					System.out.println(e);
+					System.out.println("Skipping: " + SITE_L2_ID[site]);
 				}
 				//try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
 				//	Thread.sleep(60000 * 5); // waiting 6 min may miss every 6th image
