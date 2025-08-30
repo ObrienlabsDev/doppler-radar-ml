@@ -28,6 +28,7 @@ import com.google.cloud.storage.StorageOptions;
 public class EccCapture {
 	
 	public static String BASE_URL = "https://dd.weather.gc.ca/";
+	public static String TARGET_DIR = "/Users/michaelobrien/_download/cappi/";
 	private static String USER_AGENT = "michael-at-obrienlabs-dev/0.9 (+java.net.http)";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static String CLOUD_STORAGE_URL = "";
@@ -69,6 +70,7 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
+			waitForSixMinuteTrailingOffsetInterval();
 			for(int site=0; site<30; site++) {
 				captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, 0));
 				//try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
@@ -122,6 +124,25 @@ public class EccCapture {
 		String postfix = Integer.toString(_trailingMinute);
 		return postfix.length() > 1 ? postfix : "0" + postfix;
 	}
+	
+	private void waitForSixMinuteTrailingOffsetInterval() {
+		LocalDateTime offsetTime;
+		for (;;) {
+			offsetTime = LocalDateTime.now().minusMinutes(0).plusHours(4);
+			int _trailingMinute = (offsetTime.getMinute() / RADAR_MIN_RESOLUTION) * RADAR_MIN_RESOLUTION;
+		
+			if(offsetTime.getMinute() - _trailingMinute > RADAR_MIN_POST_UPLOAD_TIME_MIN) {
+				try {
+					System.out.println(" wait 30s for 6 min interval start ");
+					Thread.sleep(30000);
+				} catch (Exception e) {
+				}
+			} else {
+				return;
+			}
+		}
+		
+	}
     
     public void uploadImage() {
     	
@@ -139,7 +160,7 @@ public class EccCapture {
     
     public void captureImage(String site, String fullUrl) throws IOException, InterruptedException {
     	//Path target = Path.of("~/_radar_unprocessed_image2025/cappi/casft", Path.of(URI.create(baseUrl).getPath()).getFileName().toString());
-    	Path target = Path.of("_download/cappi/" + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+    	Path target = Path.of(TARGET_DIR + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
     	// check target already exists - exit if
     	random10secDelay();
         HttpClient client = HttpClient.newBuilder()
