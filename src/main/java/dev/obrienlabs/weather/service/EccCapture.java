@@ -34,6 +34,8 @@ public class EccCapture {
 	public static final String CLOUD_STORAGE_URL = "";
 	public static final String GCS_BUCKET_NAME = "doppler1_old";
 	
+	// https://dd.weather.gc.ca/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
+	// https://dd.weather.gc.ca/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
 	public static final String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
 	// 30
 	public static final String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
