@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.google.cloud.storage.Bucket;
@@ -23,29 +25,45 @@ import com.google.cloud.storage.StorageClass;
 import com.google.cloud.storage.StorageOptions;
 
 /**
+ * <llm>none</llm>
  * https://github.com/ObrienlabsDev/doppler-radar-ml/issues/7
  */
 public class EccCapture {
 	
+	public static final int RADAR_SITES_COUNT = 30;
 	public static final String BASE_URL = "https://dd.weather.gc.ca/";
-	public static final String TARGET_DIR = "/Users/michaelobrien/_download/cappi/";
-	private static final String USER_AGENT = "michael-at-obrienlabs-dev/0.9 (+java.net.http)";
+	public static final String TARGET_DIR = "/Users/michaelobrien/_download/";
+	private static final String USER_AGENT = "github-obriensystems/0.9 (+java.net.http)";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static final String CLOUD_STORAGE_URL = "";
 	public static final String GCS_BUCKET_NAME = "doppler1_old";
 	
 	// https://dd.weather.gc.ca/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
-	public static final String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
+	public static final String[] CAPPI_DPQPE_L2_ID = { "CAPPI", "DPQPE" };
+	public static final String[] CAPPI_DPQPE_L3_PRE_ID = { "", "DPQPE" };
+	public static final String[] CAPPI_DPQPE_L3_POST_ID = { "CAPPI", "" };
+	private static final String[] CAPPI_DPQPE_TIME_T_ID = { "", "T" };
+	private static final String[] CAPPI_DPQPE_TIME_ZULU_ID = { "", "Z" };
+	private static final String[] CAPPI_DPQPE_POST_TIME_CHARS = { "", "_MSC_Radar-" };
+	private static final String[] CAPPI_DPQPE_END = { "_1.5_RAIN.gif", "Rain.gif" };
 	// 30
 	public static final String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
-	public static final DateTimeFormatter DATE_TIME_FORMATTER_CAPPI = DateTimeFormatter.ofPattern("yyyyMMddHH");
-	public static final DateTimeFormatter DATE_TIME_FORMATTER_DPQPE = DateTimeFormatter.ofPattern("yyyyMMdd");
+	public static final List<DateTimeFormatter> dateFormatter = new ArrayList<>();
+	public static final List<DateTimeFormatter> hourFormatter = new ArrayList<>();
+	static {
+		dateFormatter.add(DateTimeFormatter.ofPattern("yyyyMMdd")); //HH
+		dateFormatter.add(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		hourFormatter.add(DateTimeFormatter.ofPattern("HH"));
+		hourFormatter.add(DateTimeFormatter.ofPattern("HH"));
+	}
 	private static final Random RANDOM = new Random();
-	private static final long MIN_RANDOM = 5230L;
-	private static final long MAX_RANDOM = 5200L;
+	private static final long MIN_RANDOM = 3900L;//5230L;
+	private static final long MAX_RANDOM = 3000L;//5200L;
 	private static final int RADAR_MIN_RESOLUTION = 6;
-	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 1; // the time between current and last image upload
+	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 0;//1; // the time between current and last image upload
+	private static final int RADAR_2ND_LAST_INTERVAL_OFFSET_MIN = 6; // get the 2nd last set of 6 min radar images
+	private static int DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR = 4;  // pending TimeZone usage
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
@@ -74,43 +92,55 @@ public class EccCapture {
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
 			waitForSixMinuteTrailingOffsetInterval();
-			for(int site=0; site<30; site++) {
-				int cappiDpqpeFlag = 0;
+			for(int site=0; site<RADAR_SITES_COUNT; site++) {
 				try {
-					captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, cappiDpqpeFlag));
+					captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site,0), 0);
 				} catch (Exception e) {
 					// particular radar image n/a - skip
 					System.out.println(e);
 					System.out.println("Skipping: " + SITE_L2_ID[site]);
 				}
-				//try { // check 5 min + 1 min wait - crosses 6 - image not ready, wait 6, skipped image
-				//	Thread.sleep(60000 * 5); // waiting 6 min may miss every 6th image
-				//} catch (Exception e) {
-				//}
+		    	//random10secDelay(MIN_RANDOM);
+		    	try {
+					captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, 1), 1);
+				} catch (Exception e) {
+					// particular radar image n/a - skip
+					System.out.println(e);
+					System.out.println("Skipping: " + site + ": " + SITE_L2_ID[site]);
+				}
 			}
 		}
 	}
 	
+	// https://dd.weather.gc.ca/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
+	// https://dd.weather.gc.ca/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
 	private String computePostfixUrl(int siteID, int cappiID) {
 		StringBuffer buffer = new StringBuffer();
-		// GMT-4 check DST - align to 00+6min intervals
-		LocalDateTime offsetTime = LocalDateTime.now().minusMinutes(0).plusHours(4);
-		String formattedDateTime = offsetTime.format(DATE_TIME_FORMATTER_CAPPI);
+		// GMT-4 check DST - align to 00+6min intervals for last radar upload, however get 6 min ago (2nd last upload)
+		LocalDateTime offsetTime = LocalDateTime.now()
+				.minusMinutes(RADAR_2ND_LAST_INTERVAL_OFFSET_MIN)
+				.plusHours(DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR);
+		String formattedDate = offsetTime.format(dateFormatter.get(cappiID));
+		String formattedHour = offsetTime.format(hourFormatter.get(cappiID));
 		String urlPostfix = buffer.append("today/radar/")
-				.append(CAPPI_DPQPE_L3_ID[cappiID])
+				.append(CAPPI_DPQPE_L2_ID[cappiID])
 				.append("/GIF/")
 				.append("CAS")
 				.append(SITE_L2_ID[siteID])
 				.append("/")
-				.append(formattedDateTime)
+				.append(formattedDate)
+				.append(CAPPI_DPQPE_TIME_T_ID[cappiID])
+				.append(formattedHour)
 				.append(getSixMinuteTrailingOffsetMinute(offsetTime.getMinute()))
+				.append(CAPPI_DPQPE_TIME_ZULU_ID[cappiID])
+				.append(CAPPI_DPQPE_POST_TIME_CHARS[cappiID])
+				.append(CAPPI_DPQPE_L3_PRE_ID[cappiID])
 				.append("_")
 				.append("CAS")
 				.append(SITE_L2_ID[siteID])
 				.append("_")
-				.append(CAPPI_DPQPE_L3_ID[cappiID])
-				.append("_")
-				.append("1.5_RAIN.gif")
+				.append(CAPPI_DPQPE_L3_POST_ID[cappiID])
+				.append(CAPPI_DPQPE_END[cappiID])
 				.toString();
 		return urlPostfix;
 	}
@@ -125,8 +155,8 @@ public class EccCapture {
 		int _trailingMinute = (minute / RADAR_MIN_RESOLUTION) * RADAR_MIN_RESOLUTION;
 		if(minute - _trailingMinute < RADAR_MIN_POST_UPLOAD_TIME_MIN) {
 	    	try {
-	    		System.out.print(" sleep 60s ");
-	    		Thread.sleep(60000);
+	    		System.out.print(" sleep 5s ");//60s ");
+	    		Thread.sleep(5000);//60000);
 	    	} catch (Exception e) {
 	    	}
 		}
@@ -143,8 +173,8 @@ public class EccCapture {
 		
 			if(offsetTime.getMinute() - _trailingMinute > RADAR_MIN_POST_UPLOAD_TIME_MIN) {
 				try {
-					System.out.println(" wait 30s for 6 min interval start ");
-					Thread.sleep(30000);
+					System.out.println(" wait 15s for 6 min interval start - wait for 6: " + (offsetTime.getMinute() - _trailingMinute));
+					Thread.sleep(15000);
 				} catch (Exception e) {
 				}
 			} else {
@@ -154,24 +184,10 @@ public class EccCapture {
 		
 	}
     
-    public void uploadImage() {
-    	
-    }
-    
-    private long random10secDelay() {
-    	long sec = MIN_RANDOM + RANDOM.nextLong(MAX_RANDOM);
-    	System.out.print(String.format("wait %d ms - ", sec));
-    	try {
-    		Thread.sleep(sec);
-    	} catch (Exception e) {
-    	}
-        return sec;
-    }
-    
-    public void captureImage(String site, String fullUrl) throws IOException, InterruptedException {
-    	Path target = Path.of(TARGET_DIR + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+    public void captureImage(String site, String fullUrl, int cappiID) throws IOException, InterruptedException {
+    	Path target = Path.of(TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "/" + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
     	// check target already exists - exit if
-    	random10secDelay();
+    	random10secDelay(MIN_RANDOM);
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .connectTimeout(Duration.ofSeconds(15))
@@ -198,14 +214,26 @@ public class EccCapture {
         try (InputStream in = response.body()) {
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
         }
-		System.out.println(" Captured: " + fullUrl);
+		System.out.println(" Captured: " + site + ": " + fullUrl);
     }
-
+    
+    private long random10secDelay(long baseDelay) {
+    	long sec = baseDelay + RANDOM.nextLong(MAX_RANDOM);
+    	System.out.print(String.format("wait %d ms - ", sec));
+    	try {
+    		Thread.sleep(sec);
+    	} catch (Exception e) {
+    	}
+        return sec;
+    }
     
     public void downloadAllImagesFromFolder(String folderName) {
     	
     }
 	
+    public void uploadImage() {
+    	
+    }
 	// setup HttpClient
 	
 	// compute url (don't parse the directory)
@@ -300,10 +328,6 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		//try {
-			eccCapture.capture();
-		//} catch (Exception e) {
-		//	System.out.println(e);
-		//}
+		eccCapture.capture();
 	}
 }
