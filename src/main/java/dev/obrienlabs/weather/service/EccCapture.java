@@ -39,7 +39,8 @@ public class EccCapture {
 	public static final String[] CAPPI_DPQPE_L3_ID = { "CAPPI", "DPQPE" };
 	// 30
 	public static final String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
-	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHH");
+	public static final DateTimeFormatter DATE_TIME_FORMATTER_CAPPI = DateTimeFormatter.ofPattern("yyyyMMddHH");
+	public static final DateTimeFormatter DATE_TIME_FORMATTER_DPQPE = DateTimeFormatter.ofPattern("yyyyMMdd");
 	private static final Random RANDOM = new Random();
 	private static final long MIN_RANDOM = 5230L;
 	private static final long MAX_RANDOM = 5200L;
@@ -74,8 +75,9 @@ public class EccCapture {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
 			waitForSixMinuteTrailingOffsetInterval();
 			for(int site=0; site<30; site++) {
+				int cappiDpqpeFlag = 0;
 				try {
-				captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, 0));
+					captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, cappiDpqpeFlag));
 				} catch (Exception e) {
 					// particular radar image n/a - skip
 					System.out.println(e);
@@ -93,7 +95,7 @@ public class EccCapture {
 		StringBuffer buffer = new StringBuffer();
 		// GMT-4 check DST - align to 00+6min intervals
 		LocalDateTime offsetTime = LocalDateTime.now().minusMinutes(0).plusHours(4);
-		String formattedDateTime = offsetTime.format(DATE_TIME_FORMATTER);
+		String formattedDateTime = offsetTime.format(DATE_TIME_FORMATTER_CAPPI);
 		String urlPostfix = buffer.append("today/radar/")
 				.append(CAPPI_DPQPE_L3_ID[cappiID])
 				.append("/GIF/")
