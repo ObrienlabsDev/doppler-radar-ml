@@ -213,6 +213,8 @@ public class EccCapture {
 
         try (InputStream in = response.body()) {
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch(Exception e) {
+        	System.out.println(e);
         }
 		System.out.println(" Captured: " + site + ": " + fullUrl);
     }
