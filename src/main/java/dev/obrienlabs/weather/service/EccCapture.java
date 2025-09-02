@@ -63,6 +63,7 @@ public class EccCapture {
 	private static final int RADAR_MIN_RESOLUTION = 6;
 	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 0;//1; // the time between current and last image upload
 	private static final int RADAR_2ND_LAST_INTERVAL_OFFSET_MIN = 6; // get the 2nd last set of 6 min radar images
+	private static final long RADAR_TRAILING_OFFSET_CHECK_GRANULARITY_SEC = 10L;
 	private static int DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR = 4;  // pending TimeZone usage
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
@@ -176,8 +177,9 @@ public class EccCapture {
 		
 			if(offsetTime.getMinute() - _trailingMinute > RADAR_MIN_POST_UPLOAD_TIME_MIN) {
 				try {
-					System.out.println(" wait 15s for 6 min interval start - wait for 6: " + (offsetTime.getMinute() - _trailingMinute));
-					Thread.sleep(15000);
+					System.out.println(" wait " + RADAR_TRAILING_OFFSET_CHECK_GRANULARITY_SEC
+							+ "s for 6 min interval start - wait for 6: " + (offsetTime.getMinute() - _trailingMinute));
+					Thread.sleep(RADAR_TRAILING_OFFSET_CHECK_GRANULARITY_SEC * 1000);
 				} catch (Exception e) {
 				}
 			} else {
