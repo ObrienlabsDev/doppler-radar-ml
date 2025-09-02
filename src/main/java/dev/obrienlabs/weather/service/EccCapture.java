@@ -58,7 +58,7 @@ public class EccCapture {
 		hourFormatter.add(DateTimeFormatter.ofPattern("HH"));
 	}
 	private static final Random RANDOM = new Random();
-	private static final long MIN_RANDOM = 3900L;//5230L;
+	private static final long MIN_RANDOM = 3850L;//5230L;
 	private static final long MAX_RANDOM = 3000L;//5200L;
 	private static final int RADAR_MIN_RESOLUTION = 6;
 	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 0;//1; // the time between current and last image upload
