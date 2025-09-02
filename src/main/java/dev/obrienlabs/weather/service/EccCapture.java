@@ -87,27 +87,20 @@ public class EccCapture {
     	this.storage = StorageOptions.getDefaultInstance().getService();
     }
     
-	// poc - pull from today directory once
-	public void capture() {// throws IOException, InterruptedException {
+	public void capture() {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
 			waitForSixMinuteTrailingOffsetInterval();
-			for(int site=0; site<RADAR_SITES_COUNT; site++) {
-				try {
-					captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site,0), 0);
-				} catch (Exception e) {
-					// particular radar image n/a - skip
-					System.out.println(e);
-					System.out.println("Skipping: " + SITE_L2_ID[site]);
-				}
-		    	//random10secDelay(MIN_RANDOM);
-		    	try {
-					captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, 1), 1);
-				} catch (Exception e) {
-					// particular radar image n/a - skip
-					System.out.println(e);
-					System.out.println("Skipping: " + site + ": " + SITE_L2_ID[site]);
+			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
+				for(int site=0; site<RADAR_SITES_COUNT; site++) {
+					try {
+						captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, cappiDpqpe), cappiDpqpe);
+					} catch (Exception e) {
+						// particular radar image n/a - skip
+						System.out.println(e);
+						System.out.println("Skipping: " + SITE_L2_ID[site]);
+					}
 				}
 			}
 		}
