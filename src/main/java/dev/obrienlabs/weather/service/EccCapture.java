@@ -106,8 +106,8 @@ public class EccCapture {
 		}
 	}
 	
-	// https://dd.weather.gc.ca/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
-	// https://dd.weather.gc.ca/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
+	// https://dd.weather.gc.ca/today/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
+	// https://dd.weather.gc.ca/today/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
 	// last 2354 interval of today - insert 20250831/WXO-DD above /radar
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/CAPPI/GIF/CASFT/202508312354_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/DPQPE/GIF/CASFT/20250831T2354Z_MSC_Radar-DPQPE_CASFT_Rain.gif
@@ -119,7 +119,16 @@ public class EccCapture {
 				.plusHours(DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR);
 		String formattedDate = offsetTime.format(dateFormatter.get(cappiID));
 		String formattedHour = offsetTime.format(hourFormatter.get(cappiID));
-		String urlPostfix = buffer.append("today/radar/")
+		String sectionFor2354Frame = formattedDate + "/WXO-DD";
+		String minuteText = getSixMinuteTrailingOffsetMinute(offsetTime.getMinute());
+		String timeText = formattedHour + minuteText;
+		
+		if(timeText.equalsIgnoreCase("2354")) {
+			buffer.append(sectionFor2354Frame);
+		} else {
+			buffer.append("today");
+		}
+		String urlPostfix = buffer.append("/radar/")
 				.append(CAPPI_DPQPE_L2_ID[cappiID])
 				.append("/GIF/")
 				.append("CAS")
@@ -128,7 +137,7 @@ public class EccCapture {
 				.append(formattedDate)
 				.append(CAPPI_DPQPE_TIME_T_ID[cappiID])
 				.append(formattedHour)
-				.append(getSixMinuteTrailingOffsetMinute(offsetTime.getMinute()))
+				.append(minuteText)
 				.append(CAPPI_DPQPE_TIME_ZULU_ID[cappiID])
 				.append(CAPPI_DPQPE_POST_TIME_CHARS[cappiID])
 				.append(CAPPI_DPQPE_L3_PRE_ID[cappiID])
