@@ -114,7 +114,7 @@ public class EccCapture {
 	
 	// https://dd.weather.gc.ca/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
-	// last 2354 interval of today
+	// last 2354 interval of today - insert 20250831/WXO-DD above /radar
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/CAPPI/GIF/CASFT/202508312354_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/DPQPE/GIF/CASFT/20250831T2354Z_MSC_Radar-DPQPE_CASFT_Rain.gif
 	private String computePostfixUrl(int siteID, int cappiID) {
