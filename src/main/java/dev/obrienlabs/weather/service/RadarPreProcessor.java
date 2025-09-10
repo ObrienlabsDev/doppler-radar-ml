@@ -69,7 +69,7 @@ public class RadarPreProcessor {
     public void reduceRadarImages(String site, String anInputDir, String anOutputDir, boolean display, boolean persist, boolean file) {
         // Setup View with a dummy image
         String filename = null;
-        BufferedImage image = null;
+        //BufferedImage image = null;
         
         String inputDir = anInputDir + site +"/";
         String outputDir = anOutputDir;
@@ -125,5 +125,10 @@ public class RadarPreProcessor {
             counter = 0;
         }
         return counter;        
+    }
+    
+    public static void main(String[] argv) {
+    	RadarPreProcessor processor = new RadarPreProcessor();
+    	processor.reduceRadarImages("go", "/Users/michaelobrien/_download/cappi/", "/Users/michaelobrien/_download/cappi-processed/", false, false, false);
     }
 }
