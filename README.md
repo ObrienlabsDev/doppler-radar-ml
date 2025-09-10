@@ -106,6 +106,7 @@ example: https://climate.weather.gc.ca/radar/index_e.html?site=CASFT&year=2024&m
 gcloud auth login
 gcloud config unset auth/impersonate_service_account
 gsutil -m cp -r ./ gs://doppler1_old/cappi
+Operation completed over 78.9k objects/1.2 GiB. 
 ```
 <img width="1276" height="136" alt="Screenshot 2025-09-10 at 12 25 48" src="https://github.com/user-attachments/assets/b2575a35-a5b4-476f-89e4-4f0cfca6fcda" />
 
