@@ -100,5 +100,15 @@ example: https://climate.weather.gc.ca/radar/index_e.html?site=CASFT&year=2024&m
 
 ```
 
+## Google Cloud
+### Upload historial images to cloud storage
+```
+gcloud auth login
+gcloud config unset auth/impersonate_service_account
+gsutil -m cp -r ./ gs://doppler1_old/cappi
+```
+<img width="1276" height="136" alt="Screenshot 2025-09-10 at 12 25 48" src="https://github.com/user-attachments/assets/b2575a35-a5b4-476f-89e4-4f0cfca6fcda" />
+
+
 ## References
 - Older Java based project - https://github.com/obrienlabs/radar
