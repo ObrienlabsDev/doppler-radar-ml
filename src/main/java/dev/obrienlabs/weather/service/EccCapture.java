@@ -68,6 +68,7 @@ public class EccCapture {
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
+	private RadarPreProcessor processor = new RadarPreProcessor();
     
     // add map to track current interval of 30 images
 	
@@ -91,7 +92,7 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
-			waitForSixMinuteTrailingOffsetInterval();
+			//waitForSixMinuteTrailingOffsetInterval();
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
 				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
@@ -224,6 +225,12 @@ public class EccCapture {
         	System.out.println(e);
         }
 		System.out.println(" Captured: " + site + ": " + fullUrl);
+		
+		// process image
+    	processor.reduceRadarImage(site, 
+    			TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "/" + site + "/" + Path.of(URI.create(fullUrl).getPath()).getFileName().toString(),
+    			TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "-processed" + "/" + site + "/" + Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+
     }
     
     private long random10secDelay(long baseDelay) {

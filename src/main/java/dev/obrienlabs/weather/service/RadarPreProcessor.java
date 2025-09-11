@@ -38,6 +38,16 @@ public class RadarPreProcessor {
 		}
 		return image;
 	}
+
+	public void writeImage(Image anImage, String filename) {
+		try {
+		File file = new File(filename);// + "." + format);
+		// create dirs first
+		ImageIO.write((BufferedImage)anImage, "gif", file);
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
 	
 	public void writeImage(Image anImage, String filename, String format) {
 		try {
@@ -96,11 +106,19 @@ public class RadarPreProcessor {
         }
     }
 
-    public void reduceRadarImages(String site, String anInputDir, String anOutputDir, boolean display, boolean persist, boolean file) {
-        // Setup View with a dummy image
+    public void reduceRadarImage(String site, String anInputFile, String anOutputFile) {
+        BufferedImage input = null;
+        BufferedImage reducedImage = null;
+        input = loadImage(anInputFile);
+        reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1);
+        writeImage(reducedImage, anOutputFile);
+        System.out.print(".");
+
+    }
+    
+    public void reduceRadarImages(String site, String anInputDir, String anOutputDir) {
+    	boolean overwrite = true;
         String filename = null;
-        //BufferedImage image = null;
-        
         String inputDir = anInputDir + site +"/";
         String outputDir = anOutputDir;
         // read everything in the directory
@@ -124,7 +142,8 @@ public class RadarPreProcessor {
                     // check if a filtered image already exists - skip then
                     outputPath = outputDir + site +"/" + filenameRoot + "_f";
                     verify = loadImage(outputPath + ".gif", true);
-                    if(null == verify) {              
+                    // overwrite always
+                    if(overwrite || null == verify) {              
                         input = loadImage(inputDir + filename);
                         if(null != input && filesize > 0) {
                             reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1);
@@ -159,6 +178,6 @@ public class RadarPreProcessor {
     
     public static void main(String[] argv) {
     	RadarPreProcessor processor = new RadarPreProcessor();
-    	processor.reduceRadarImages("go", "/Users/michaelobrien/_download/cappi/", "/Users/michaelobrien/_download/cappi-processed/", false, false, false);
+    	processor.reduceRadarImages("go", "/Users/michaelobrien/_download/cappi/", "/Users/michaelobrien/_download/cappi-processed/");
     }
 }
