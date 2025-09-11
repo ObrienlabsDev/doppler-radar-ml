@@ -9,6 +9,12 @@ Doppler Radar ML
 
 ## Design Issues
 - https://github.com/ObrienlabsDev/doppler-radar-ml/blob/main/design-issues.md
+
+### DI10: Process Images into Vectorized content
+see preliminary filtering of only radar levels
+
+<img width="2830" height="1060" alt="Image" src="https://github.com/user-attachments/assets/5cf9a626-0a65-4417-b65c-926445d86eb2" />
+
 ## Use Cases
 15 years of 500k 2k images from a doppler radar station will be processed and used to train an deep neural network that will be used to generate future radar images.
 
