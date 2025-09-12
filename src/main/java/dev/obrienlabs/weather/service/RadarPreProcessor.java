@@ -62,7 +62,7 @@ public class RadarPreProcessor {
         int height = input.getHeight();
         BufferedImage croppedImage = new BufferedImage(height, height, BufferedImage.TYPE_INT_RGB);
         
-        computeFilter(input, 0, height, croppedImage, height, height);
+        computeFilter(input, 0, height, croppedImage, height);
         
         // erase red edge box last
         Graphics2D g = croppedImage.createGraphics(); 
@@ -77,35 +77,25 @@ public class RadarPreProcessor {
         return croppedImage;
     }
 
-    
-    private void doFilterType(BufferedImage input, int x, int y, int pColor) {
-        boolean match = false;
-        for(int i=0; i<RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 0;i++) {                   
-            if(pColor == RadarSite.PRECIP_INTENSITY_COLOR_CODES[i]) {
-                match = true;
-                i = RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE;
-            }
-        }
-        if(match) {
-        	// TODO: USE NON-SYNCHRONIZED METHOD
-            input.setRGB(x, y, pColor);
-        }
-    }    
-    
-    protected void computeFilter(BufferedImage mSource, int mStart, int mLength, BufferedImage mDestination, int height, int width) {
+ 
+    protected void computeFilter(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width) {
         //boolean match = false;
     	int pColor;
-    	int mEnd = mStart + mLength;
+    	int mEnd = mStart + height;
     	for (int index = mStart; index < mEnd; index++) {
             for(int x=0;x<width;x++) {
                 pColor = mSource.getRGB(x, index);
-                doFilterType(mDestination, x, index, pColor);
-                // filter based on subset of intensities
-                //match = false;
+                for(int i=0; i<RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 0; i++) {                   
+                    if(pColor == RadarSite.PRECIP_INTENSITY_COLOR_CODES[i]) {
+                    	// TODO: USE NON-SYNCHRONIZED METHOD
+                    	mDestination.setRGB(x, index, pColor);
+                        i = RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE; // short circuit for loop
+                    }
+                }
             }
         }
-    }
-
+    }   
+    
     public void reduceRadarImage(String site, String anInputFile, String anOutputFile) {
         BufferedImage input = null;
         BufferedImage reducedImage = null;
