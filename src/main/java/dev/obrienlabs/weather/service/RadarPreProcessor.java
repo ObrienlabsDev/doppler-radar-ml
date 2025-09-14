@@ -22,7 +22,6 @@ public class RadarPreProcessor {
 	}
 	
 	private BufferedImage loadImage(String filename, boolean verifyOnlyFlag) {
-
 		File file = new File(filename);
 		BufferedImage image = null;
 		try {
@@ -32,9 +31,6 @@ public class RadarPreProcessor {
 		        System.out.println("missing: " + filename);
 		        //ioe.printStackTrace();
 		    }
-		}
-		if(null != image) {
-			//System.out.println(image.toString());
 		}
 		return image;
 	}
@@ -138,14 +134,12 @@ public class RadarPreProcessor {
                             reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1);
                             writeImage(reducedImage, outputPath, "gif");
                             System.out.print(".");
-                            counter = updateCounterPrivate(site, counter, i);
                         } else {
                             System.out.println("\n_Invalid filesize: " + filesize + " :" + filename);
                         }
                     } else {
                         // file exists
                         System.out.print("+");
-                        counter = updateCounterPrivate(site, counter, i);
                     }
                 }
             } else {
@@ -157,13 +151,6 @@ public class RadarPreProcessor {
         }
     }
     
-    protected int updateCounterPrivate(String site, int counter, int count) {
-        if(counter++ > 98) {
-            System.out.print(site + "\n" + (count + 1));
-            counter = 0;
-        }
-        return counter;        
-    }
     
     public static void main(String[] argv) {
     	RadarPreProcessor processor = new RadarPreProcessor();
