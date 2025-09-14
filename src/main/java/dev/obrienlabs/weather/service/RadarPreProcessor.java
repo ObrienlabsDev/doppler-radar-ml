@@ -17,11 +17,11 @@ import dev.obrienlabs.weather.model.RadarSite;
 public class RadarPreProcessor {
 
 
-	public BufferedImage loadImage(String filename) {
+	private BufferedImage loadImage(String filename) {
 	    return loadImage(filename, false);
 	}
 	
-	public BufferedImage loadImage(String filename, boolean verifyOnlyFlag) {
+	private BufferedImage loadImage(String filename, boolean verifyOnlyFlag) {
 
 		File file = new File(filename);
 		BufferedImage image = null;
@@ -39,7 +39,7 @@ public class RadarPreProcessor {
 		return image;
 	}
 
-	public void writeImage(Image anImage, String filename) {
+	private void writeImage(Image anImage, String filename) {
 		try {
 		File file = new File(filename);// + "." + format);
 		// create dirs first
@@ -49,7 +49,7 @@ public class RadarPreProcessor {
 		}
 	}
 	
-	public void writeImage(Image anImage, String filename, String format) {
+	private void writeImage(Image anImage, String filename, String format) {
 		try {
 		File file = new File(filename + "." + format);
 		ImageIO.write((BufferedImage)anImage, format, file);
@@ -58,7 +58,7 @@ public class RadarPreProcessor {
 		}
 	}
 	
-    public BufferedImage doFilter(int filter, BufferedImage input, int layer) {
+    private BufferedImage doFilter(int filter, BufferedImage input, int layer) {
         int height = input.getHeight();
         BufferedImage croppedImage = new BufferedImage(height, height, BufferedImage.TYPE_INT_RGB);
         
@@ -78,8 +78,7 @@ public class RadarPreProcessor {
     }
 
  
-    protected void computeFilter(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width) {
-        //boolean match = false;
+    private void computeFilter(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width) {
     	int pColor;
     	int mEnd = mStart + height;
     	for (int index = mStart; index < mEnd; index++) {
