@@ -1,4 +1,8 @@
 # doppler-radar-ml
+The Government of Canada site for doppler radar images published by ECCC is located at 
+This project details a method of predicting the next sequence of radar image data in the immediate future (6, 12, 18... min).
+
+## Related Projects
 Doppler Radar ML
 - see https://github.com/ObrienlabsDev/biometric-backend/issues
 - see https://github.com/ObrienlabsDev/biometric-backend-python/issues
