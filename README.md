@@ -9,7 +9,7 @@ Doppler Radar ML
 
 ## Architecture
 ### Motivations
-This project is as much a discovery/relearning exercise on transitioning from 2000 era Genetic Algorithms to Machine Learning techniques supplemented with the latest Transformer architecture worked out by Google in 2017 in "Attention is all you need"
+This project is as much a discovery/relearning exercise on transitioning from 2000 era Genetic Algorithms to Machine Learning techniques supplemented with the latest Transformer architecture worked out by Google in 2017 in "Attention is all you need" https://en.wikipedia.org/wiki/Attention_Is_All_You_Need
 
 ## Deployment
 
@@ -24,10 +24,14 @@ This project is as much a discovery/relearning exercise on transitioning from 20
 ## Design Issues
 - https://github.com/ObrienlabsDev/doppler-radar-ml/blob/main/design-issues.md
 
-### DI10: Process Images into Vectorized content
+### DI10: Process Images into Numerical content
 see preliminary filtering of only radar levels
 
 <img width="2830" height="1060" alt="Image" src="https://github.com/user-attachments/assets/5cf9a626-0a65-4417-b65c-926445d86eb2" />
+
+### DI11: Representing Image Sequencing - date/time stamp embedding
+
+### DI12: Vectorizing Single or multiple pixel groups
 
 ## Use Cases
 15 years of 500k 2k images from a doppler radar station will be processed and used to train an deep neural network that will be used to generate future radar images.
