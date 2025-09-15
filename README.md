@@ -7,6 +7,16 @@ Doppler Radar ML
 - see https://github.com/ObrienlabsDev/biometric-backend/issues
 - see https://github.com/ObrienlabsDev/biometric-backend-python/issues
 
+## Architecture
+### Motivations
+This project is as much a discovery/relearning exercise on transitioning from 2000 era Genetic Algorithms to Machine Learning techniques supplemented with the latest Transformer architecture worked out by Google in 2017 in "Attention is all you need"
+
+## Deployment
+
+### Local Deployment
+
+### Google Cloud Deployment
+
 ## Historical Radar Data
 - https://climate.weather.gc.ca/radar/index_e.html
 - https://eccc-msc.github.io/open-data/msc-data/obs_radar/readme_radarimage-datamart_en/
