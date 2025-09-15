@@ -1,5 +1,5 @@
 # doppler-radar-ml
-The Government of Canada site for doppler radar images published by ECCC is located at 
+The Government of Canada site for doppler radar images published by ECCC is located at https://dd.weather.gc.ca/
 This project details a method of predicting the next sequence of radar image data in the immediate future (6, 12, 18... min).
 
 ## Related Projects
