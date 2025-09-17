@@ -6,6 +6,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
@@ -39,6 +41,8 @@ public class RadarPreProcessor {
 		try {
 		File file = new File(filename);// + "." + format);
 		// create dirs first
+		
+		Files.createDirectories(Path.of(filename).getParent());
 		ImageIO.write((BufferedImage)anImage, "gif", file);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
