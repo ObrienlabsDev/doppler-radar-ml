@@ -32,12 +32,14 @@ public class EccCapture {
 	
 	public static final int RADAR_SITES_COUNT = 30;
 	public static final String BASE_URL = "https://dd.weather.gc.ca/";
+	public static final String HISTORICAL_URL_MIDFIX = "WXO-DD";
 	public static final String TARGET_DIR = "/Users/michaelobrien/_download/";
 	private static final String USER_AGENT = "github-obriensystems/0.9 (+java.net.http)";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static final String CLOUD_STORAGE_URL = "";
 	public static final String GCS_BUCKET_NAME = "doppler1_old";
 	
+	// https://dd.weather.gc.ca/20250829/WXO-DD/radar/CAPPI/GIF/CASAG/202508290000_CASAG_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/radar/CAPPI/GIF/CASFT/202508311230_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/radar/DPQPE/GIF/CASFT/20250831T1230Z_MSC_Radar-DPQPE_CASFT_Rain.gif
 	public static final String[] CAPPI_DPQPE_L2_ID = { "CAPPI", "DPQPE" };
@@ -88,7 +90,15 @@ public class EccCapture {
     	this.storage = StorageOptions.getDefaultInstance().getService();
     }
     
+    // https://dd.weather.gc.ca/20250829/WXO-DD/radar/CAPPI/GIF/CASAG/202508290000_CASAG_CAPPI_1.5_RAIN.gif
+    public void captureHistoricalFromDate(String historicalDate) {
+    	capture(historicalDate);
+    }
+    
 	public void capture() {
+		capture(null);
+	}
+	public void capture(String historicalDate) {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
@@ -96,7 +106,7 @@ public class EccCapture {
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
 				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
-						captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, cappiDpqpe), cappiDpqpe);
+						captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + computePostfixUrl(site, cappiDpqpe, historicalDate), cappiDpqpe);
 					} catch (Exception e) {
 						// particular radar image n/a - skip
 						System.out.println(e);
@@ -112,22 +122,32 @@ public class EccCapture {
 	// last 2354 interval of today - insert 20250831/WXO-DD above /radar
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/CAPPI/GIF/CASFT/202508312354_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/DPQPE/GIF/CASFT/20250831T2354Z_MSC_Radar-DPQPE_CASFT_Rain.gif
-	private String computePostfixUrl(int siteID, int cappiID) {
+	private String computePostfixUrl(int siteID, int cappiID, String historicalDate) {
 		StringBuffer buffer = new StringBuffer();
 		// GMT-4 check DST - align to 00+6min intervals for last radar upload, however get 6 min ago (2nd last upload)
 		LocalDateTime offsetTime = LocalDateTime.now()
 				.minusMinutes(RADAR_2ND_LAST_INTERVAL_OFFSET_MIN)
 				.plusHours(DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR);
-		String formattedDate = offsetTime.format(dateFormatter.get(cappiID));
+		// compute historical URL if requested - up to 30 days previously
+		String formattedDate = null;
+		if(null == historicalDate) {
+			formattedDate = offsetTime.format(dateFormatter.get(cappiID));
+		} else {
+			formattedDate = historicalDate;
+		}
 		String formattedHour = offsetTime.format(hourFormatter.get(cappiID));
-		String sectionFor2354Frame = formattedDate + "/WXO-DD";
+		String sectionFor2354Frame = formattedDate + "/" + HISTORICAL_URL_MIDFIX;
 		String minuteText = getSixMinuteTrailingOffsetMinute(offsetTime.getMinute());
 		String timeText = formattedHour + minuteText;
 		
 		if(timeText.equalsIgnoreCase("2354")) {
 			buffer.append(sectionFor2354Frame);
 		} else {
-			buffer.append("today");
+			if(null != historicalDate) {
+				buffer.append(sectionFor2354Frame);
+			} else {
+				buffer.append("today");
+			}
 		}
 		String urlPostfix = buffer.append("/radar/")
 				.append(CAPPI_DPQPE_L2_ID[cappiID])
@@ -189,11 +209,16 @@ public class EccCapture {
 				return;
 			}
 		}
-		
 	}
     
     public void captureImage(String site, String fullUrl, int cappiID) throws IOException, InterruptedException {
-    	Path target = Path.of(TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "/" + site, Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+    	captureImage(site, fullUrl, cappiID, null);
+    }
+    
+    public void captureImage(String site, String fullUrl, int cappiID, String historicalDate) throws IOException, InterruptedException {
+    	Path target = Path.of(TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "/" + site, 
+				Path.of(URI.create(fullUrl).getPath()).getFileName().toString());;
+  
     	// check target already exists - exit if
     	random10secDelay(MIN_RANDOM);
         HttpClient client = HttpClient.newBuilder()
@@ -344,6 +369,6 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		eccCapture.capture();
+		eccCapture.capture("20250914");
 	}
 }
