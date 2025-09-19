@@ -137,7 +137,7 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
-			//waitForSixMinuteTrailingOffsetInterval();
+			waitForSixMinuteTrailingOffsetInterval();
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
 				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
