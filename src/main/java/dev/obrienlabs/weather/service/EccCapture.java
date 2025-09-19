@@ -12,11 +12,11 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
@@ -369,6 +369,6 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		eccCapture.capture("20250914");
+		eccCapture.capture();//("20250914");
 	}
 }
