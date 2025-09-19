@@ -24,6 +24,9 @@ This project is as much a discovery/relearning exercise on transitioning from 20
 ## Design Issues
 - https://github.com/ObrienlabsDev/doppler-radar-ml/blob/main/design-issues.md
 
+### DI09: Rate Limiting ECCC Requests
+I currently implement a randomized 6 second delay when downloading images from ECCC.  Introduce a formal map/count or token based rate limiter to break out the logic.
+see 
 ### DI10: Process Images into Numerical content
 see preliminary filtering of only radar levels
 
