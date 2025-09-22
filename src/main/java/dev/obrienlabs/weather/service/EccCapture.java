@@ -102,7 +102,7 @@ public class EccCapture {
 			// GMT-4 check DST - align to 00+6min intervals for last radar upload, however get 6 min ago (2nd last upload)
 			offsetTime = offsetTime.minusMinutes(RADAR_2ND_LAST_INTERVAL_OFFSET_MIN);
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
-				for(int site=0; site<1; site++) {//RADAR_SITES_COUNT; site++) {
+				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
 						captureImage(SITE_L2_ID[site].toLowerCase(), BASE_URL + 
 								computePostfixUrl(site, cappiDpqpe, offsetTime.format(dateFormatter.get(cappiDpqpe)), 
