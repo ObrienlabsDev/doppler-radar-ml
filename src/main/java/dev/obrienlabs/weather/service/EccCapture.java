@@ -33,8 +33,8 @@ public class EccCapture {
 	public static final int RADAR_SITES_COUNT = 30;
 	public static final String BASE_URL = "https://dd.weather.gc.ca/";
 	public static final String HISTORICAL_URL_MIDFIX = "WXO-DD";
-	//public static final String TARGET_DIR = "/Users/michaelobrien/_download/";
-	public static final String TARGET_DIR = "c:/_download/";
+	public static final String TARGET_DIR = "/Users/michaelobrien/_download/";
+	//public static final String TARGET_DIR = "c:/_download/";
 	private static final String USER_AGENT = "github-obriensystems/0.9 (+java.net.http)";
 	//https://console.cloud.google.com/storage/overview;tab=overview?hl=en&project=doppler-radar-old
 	public static final String CLOUD_STORAGE_URL = "";
@@ -137,7 +137,7 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
-			waitForSixMinuteTrailingOffsetInterval();
+			//waitForSixMinuteTrailingOffsetInterval();
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
 				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
@@ -248,8 +248,10 @@ public class EccCapture {
     }
     
     public void captureImage(String site, String fullUrl, int cappiID, String historicalDate) throws IOException, InterruptedException {
-    	Path target = Path.of(TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "/" + site, 
-				Path.of(URI.create(fullUrl).getPath()).getFileName().toString());;
+    	String targetPathRoot = TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase();
+    	String targetPathFirst = targetPathRoot + "/" + site;
+    	String targetPathLast = Path.of(URI.create(fullUrl).getPath()).getFileName().toString();
+    	Path target = Path.of(targetPathRoot + "/" + site, targetPathLast);
   
     	// check target already exists - exit if
     	random10secDelay(MIN_RANDOM);
@@ -284,9 +286,8 @@ public class EccCapture {
 		System.out.println(" Captured: " + site + ": " + fullUrl);
 		
 		// process image
-    	processor.reduceRadarImage(site, 
-    			TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "/" + site + "/" + Path.of(URI.create(fullUrl).getPath()).getFileName().toString(),
-    			TARGET_DIR + CAPPI_DPQPE_L2_ID[cappiID].toLowerCase() + "-processed" + "/" + site + "/" + Path.of(URI.create(fullUrl).getPath()).getFileName().toString());
+    	processor.reduceRadarImage(site, targetPathFirst + "/" + targetPathLast,
+    			targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast);
 
     }
     
@@ -401,7 +402,7 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		//eccCapture.capture();//("20250914");
-		eccCapture.reverseCaptureHistoricalFromNow();
+		eccCapture.capture();//("20250914");
+		//eccCapture.reverseCaptureHistoricalFromNow();
 	}
 }
