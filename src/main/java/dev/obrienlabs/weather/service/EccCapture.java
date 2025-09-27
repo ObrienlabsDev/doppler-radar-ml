@@ -291,8 +291,10 @@ public class EccCapture {
     	}
     	
 		// process image
-    	processor.reduceRadarImage(site, targetPathFirst + "/" + targetPathLast,
-    			targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast);
+    	String processedPath = targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast;
+    	if(!Files.exists(Path.of(processedPath))) {
+    		processor.reduceRadarImage(site, targetPathFirst + "/" + targetPathLast, processedPath);
+    	}
 
     }
     
