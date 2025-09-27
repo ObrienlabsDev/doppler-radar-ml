@@ -51,7 +51,8 @@ public class EccCapture {
 	private static final String[] CAPPI_DPQPE_POST_TIME_CHARS = { "", "_MSC_Radar-" };
 	private static final String[] CAPPI_DPQPE_END = { "_1.5_RAIN.gif", "Rain.gif" };
 	// 30
-	public static final String[] SITE_L2_ID = { "FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
+	public static final String[] SITE_L2_ID = { 
+			"FT","AG","BI","BV","CL","CM","CV","DR","ET","FM","GO","HP","HR","KR","LA","MA","MB","MM","MR","PG","RA","RF","SF","SM","SN","SR","SS","SU","VD","WL" };
 	public static final List<DateTimeFormatter> dateFormatter = new ArrayList<>();
 	public static final List<DateTimeFormatter> hourFormatter = new ArrayList<>();
 	static {
@@ -254,37 +255,41 @@ public class EccCapture {
     	Path target = Path.of(targetPathRoot + "/" + site, targetPathLast);
   
     	// check target already exists - exit if
-    	random10secDelay(MIN_RANDOM);
-        HttpClient client = HttpClient.newBuilder()
+    	if(Files.exists(target)) {
+    		System.out.println(target + " exists");
+    	} else {
+    		random10secDelay(MIN_RANDOM);
+    		HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
 
-        HttpRequest request = HttpRequest.newBuilder(URI.create(fullUrl))
+    		HttpRequest request = HttpRequest.newBuilder(URI.create(fullUrl))
                 .header("User-Agent", USER_AGENT)
                 .timeout(Duration.ofMinutes(1))
                 .GET()
                 .build();
 
-        HttpResponse<InputStream> response =
+    		HttpResponse<InputStream> response =
                 client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        int status = response.statusCode();
-        if (status < 200 || status >= 300) {
-            throw new IOException("HTTP " + status + " while downloading " + fullUrl);
-        }
+    		int status = response.statusCode();
+    		if(status < 200 || status >= 300) {
+    			throw new IOException("HTTP " + status + " while downloading " + fullUrl);
+    		}
 
-        if (target.getParent() != null) {
-            Files.createDirectories(target.getParent());
-        }
+    		if(target.getParent() != null) {
+    			Files.createDirectories(target.getParent());
+    		}
 
-        try (InputStream in = response.body()) {
-            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
-        } catch(Exception e) {
-        	System.out.println(e);
-        }
-		System.out.println(" Captured: " + site + ": " + fullUrl);
-		
+    		try(InputStream in = response.body()) {
+    			Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+    		} catch(Exception e) {
+    			System.out.println(e);
+    		}
+    		System.out.println(" Captured: " + site + ": " + fullUrl);
+    	}
+    	
 		// process image
     	processor.reduceRadarImage(site, targetPathFirst + "/" + targetPathLast,
     			targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast);
@@ -402,7 +407,7 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		eccCapture.capture();//("20250914");
-		//eccCapture.reverseCaptureHistoricalFromNow();
+		//eccCapture.capture();//("20250914");
+		eccCapture.reverseCaptureHistoricalFromNow();
 	}
 }
