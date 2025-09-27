@@ -20,6 +20,9 @@ This project is as much a discovery/relearning exercise on transitioning from 20
 ## Historical Radar Data
 - https://climate.weather.gc.ca/radar/index_e.html
 - https://eccc-msc.github.io/open-data/msc-data/obs_radar/readme_radarimage-datamart_en/
+- https://dd.weather.gc.ca/
+- 
+- 
 
 ## Design Issues
 - https://github.com/ObrienlabsDev/doppler-radar-ml/blob/main/design-issues.md
