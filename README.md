@@ -132,7 +132,7 @@ example: https://climate.weather.gc.ca/radar/index_e.html?site=CASFT&year=2024&m
 ```
 
 ## Google Cloud
-### Upload historial images to cloud storage
+### Upload historical images to cloud storage
 ```
 gcloud auth login
 gcloud config unset auth/impersonate_service_account
