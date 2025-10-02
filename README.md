@@ -26,9 +26,9 @@ This project is as much a discovery/relearning exercise on transitioning from 20
 
 ## Design Issues
 - https://github.com/ObrienlabsDev/doppler-radar-ml/blob/main/design-issues.md
-### DI01: Radar Image Download and Processing
+### DI01: Radar Image Download
 See 
-Downloading both CAPPI and DPQPE images and removing all non-precip levels requires 4 photos per 6 min interval or around 14400 images for 30 sites in 24 hours or 900k images per month.
+Downloading both CAPPI and DPQPE images and removing all non-precip levels requires 2 photos per 6 min interval or around 14400 images for 30 sites in 24 hours or 900k images per month.
 
 ### DI09: Rate Limiting ECCC Requests
 I currently implement a randomized 6 second delay when downloading images from ECCC.  Introduce a formal map/count or token based rate limiter to break out the logic.
