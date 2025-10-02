@@ -34,6 +34,7 @@ This project is as much a discovery/relearning exercise on transitioning from 20
 See 
 Downloading both CAPPI and DPQPE images and removing all non-precip levels requires 2 photos per 6 min interval or around 14400 images for 30 sites in 24 hours or 900k images per month.
 
+
 ### DI09: Rate Limiting ECCC Requests
 I currently implement a randomized 6 second delay when downloading images from ECCC.  Introduce a formal map/count or token based rate limiter to break out the logic.
 see https://github.com/ObrienlabsDev/doppler-radar-ml/issues/15
@@ -45,10 +46,13 @@ see preliminary filtering of only radar levels
 
 ### DI11: Representing Image Sequencing - date/time stamp embedding
 
-### DI12: Vectorizing Single or multiple pixel groups
+### DI12: Vectorizing Single or multiple pixel groupswe
+
+### DI13: Model per site
+Training models directly on particular site images may work better than a generic model that can process any of the 30 sites.
 
 ## Use Cases
-15 years of 500k 2k images from a doppler radar station will be processed and used to train an deep neural network that will be used to generate future radar images.
+15 years of 500k 2k images from a doppler radar station may be processed and used to train a deep neural network that will be used to generate future radar images - However the new format at ECCC allows for images without the historical format artifacts of names and borders covering key pixel areas.  We will use use live and 30 day historical data to train the model.
 
 ## Design
   As of 20250821 the ECC site has added an easier way to capture live radar data.  Instead of parsing the consumer site we can go directly to the ecc server and it's secondary. 
