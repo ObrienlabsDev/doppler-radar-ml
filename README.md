@@ -4,6 +4,10 @@ This project details a method of predicting the next sequence of radar image dat
 
 ## Related Projects
 Doppler Radar ML
+- https://arxiv.org/abs/1706.03762
+- see https://github.com/ObrienlabsDev/foundation-transformer-llm
+- see https://github.com/ObrienlabsDev/doppler-radar-ml
+- see https://github.com/ObrienlabsDev/machine-learning/issues/5
 - see https://github.com/ObrienlabsDev/biometric-backend/issues
 - see https://github.com/ObrienlabsDev/biometric-backend-python/issues
 
