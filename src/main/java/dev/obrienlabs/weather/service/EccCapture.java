@@ -1,5 +1,7 @@
 package dev.obrienlabs.weather.service;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -17,6 +19,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
@@ -73,6 +81,10 @@ public class EccCapture {
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
 	private RadarPreProcessor processor = new RadarPreProcessor();
+	private JFrame frame = new JFrame("doppler");
+	private JPanel panel = new JPanel();
+	private ImageIcon imageIcon = null;
+	private JLabel label = null;
     
     // add map to track current interval of 30 images
 	
@@ -90,7 +102,22 @@ public class EccCapture {
     	// export BILLING_ID=$(gcloud alpha billing projects describe $PROJECT_ID '--format=value(billingAccountName)' | sed 's/.*\///')
     	// USER_EMAIL=`gcloud config list account --format "value(core.account)"`
     	this.storage = StorageOptions.getDefaultInstance().getService();
+    	
+		try {
+            
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(720, 560);
+			BufferedImage image = ImageIO.read(new File("data/casft/purple/202508292100_CASFT_CAPPI_1.5_RAIN.gif"));
+			imageIcon = new ImageIcon(image);
+			label = new JLabel(imageIcon);
+            panel.add(label); 
+            frame.add(panel); 
+            frame.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
+    
     
     // https://dd.weather.gc.ca/20250829/WXO-DD/radar/CAPPI/GIF/CASAG/202508290000_CASAG_CAPPI_1.5_RAIN.gif
     /**
@@ -138,7 +165,7 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
-			waitForSixMinuteTrailingOffsetInterval();
+			//waitForSixMinuteTrailingOffsetInterval();
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
 				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
@@ -287,7 +314,12 @@ public class EccCapture {
     		} catch(Exception e) {
     			System.out.println(e);
     		}
-    		System.out.println(" Captured: " + site + ": " + fullUrl);
+    		System.out.println(" Captured: " + site + ": " + fullUrl +  "to: " + target.toString());
+    		
+    		// display image
+			BufferedImage image = ImageIO.read(new File(target.toString()));
+			imageIcon = new ImageIcon(image);
+			label.setIcon(imageIcon);
     	}
     	
 		// process image
