@@ -104,7 +104,6 @@ public class EccCapture {
     	this.storage = StorageOptions.getDefaultInstance().getService();
     	
 		try {
-            
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(720, 560);
 			BufferedImage image = ImageIO.read(new File("data/casft/purple/202508292100_CASFT_CAPPI_1.5_RAIN.gif"));
@@ -165,7 +164,7 @@ public class EccCapture {
 		//createGCSBucket(GCS_BUCKET_NAME);
 		for(;;) {
 			// add wait until 1 min after - NEED TO COMPLETE IN 4 min after possible 2 min late start
-			//waitForSixMinuteTrailingOffsetInterval();
+			waitForSixMinuteTrailingOffsetInterval();
 			for(int cappiDpqpe=0; cappiDpqpe<2; cappiDpqpe++) {
 				for(int site=0; site<RADAR_SITES_COUNT; site++) {
 					try {
@@ -315,12 +314,11 @@ public class EccCapture {
     			System.out.println(e);
     		}
     		System.out.println(" Captured: " + site + ": " + fullUrl +  "to: " + target.toString());
-    		
-    		// display image
-			BufferedImage image = ImageIO.read(new File(target.toString()));
-			imageIcon = new ImageIcon(image);
-			label.setIcon(imageIcon);
     	}
+		// display image (historical or live)
+		BufferedImage image = ImageIO.read(new File(target.toString()));
+		imageIcon = new ImageIcon(image);
+		label.setIcon(imageIcon);
     	
 		// process image
     	String processedPath = targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast;
