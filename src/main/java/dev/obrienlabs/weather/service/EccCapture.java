@@ -1,6 +1,5 @@
 package dev.obrienlabs.weather.service;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,10 +80,9 @@ public class EccCapture {
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
 	private RadarPreProcessor processor = new RadarPreProcessor();
-	private JFrame frame = new JFrame("doppler");
-	private JPanel panel = new JPanel();
-	private ImageIcon imageIcon = null;
-	private JLabel label = null;
+	private JFrame uiFrame = new JFrame("doppler");
+	private JPanel uiPanel = new JPanel();
+	private JLabel uiLabel = null;
     
     // add map to track current interval of 30 images
 	
@@ -104,14 +102,12 @@ public class EccCapture {
     	this.storage = StorageOptions.getDefaultInstance().getService();
     	
 		try {
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(720, 560);
-			BufferedImage image = ImageIO.read(new File("data/casft/purple/202508292100_CASFT_CAPPI_1.5_RAIN.gif"));
-			imageIcon = new ImageIcon(image);
-			label = new JLabel(imageIcon);
-            panel.add(label); 
-            frame.add(panel); 
-            frame.setVisible(true);
+            uiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            uiFrame.setSize(720, 560);
+			uiLabel = new JLabel(new ImageIcon(ImageIO.read(new File("data/casft/purple/202508292100_CASFT_CAPPI_1.5_RAIN.gif"))));
+            uiPanel.add(uiLabel); 
+            uiFrame.add(uiPanel); 
+            uiFrame.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -313,12 +309,10 @@ public class EccCapture {
     		} catch(Exception e) {
     			System.out.println(e);
     		}
-    		System.out.println(" Captured: " + site + ": " + fullUrl +  "to: " + target.toString());
+    		System.out.println(" Captured: " + site + ": " + fullUrl +  " to: " + target.toString());
     	}
 		// display image (historical or live)
-		BufferedImage image = ImageIO.read(new File(target.toString()));
-		imageIcon = new ImageIcon(image);
-		label.setIcon(imageIcon);
+		uiLabel.setIcon(new ImageIcon(ImageIO.read(new File(target.toString()))));
     	
 		// process image
     	String processedPath = targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast;
@@ -439,7 +433,7 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		eccCapture.capture();//("20250914");
+		eccCapture.capture();
 		//eccCapture.reverseCaptureHistoricalFromNow();
 	}
 }
