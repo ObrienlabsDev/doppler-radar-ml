@@ -39,8 +39,11 @@ Downloading both CAPPI and DPQPE images and removing all non-precip levels requi
 I currently implement a randomized 6 second delay when downloading images from ECCC.  Introduce a formal map/count or token based rate limiter to break out the logic.
 see https://github.com/ObrienlabsDev/doppler-radar-ml/issues/15
 
-### DI10: Process Images into Numerical content
-see preliminary filtering of only radar levels
+### DI10: Process Images into Numerical Vector content
+- https://github.com/ObrienlabsDev/doppler-radar-ml/issues/21
+The goal is to process the images using machine learning vector algorithms.  Representing the 480 x 480 pixel - 15 color (4 bit/pixel) image as a single vector in 230.4k dimensions would aide in processing.
+
+See preliminary filtering of only radar levels
 
 <img width="2830" height="1060" alt="Image" src="https://github.com/user-attachments/assets/5cf9a626-0a65-4417-b65c-926445d86eb2" />
 
