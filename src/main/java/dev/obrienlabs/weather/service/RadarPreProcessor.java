@@ -106,7 +106,7 @@ public class RadarPreProcessor {
     }
     
     public void reduceRadarImages(String site, String anInputDir, String anOutputDir) {
-    	boolean overwrite = true;
+    	boolean overwrite = false;
         String filename = null;
         String inputDir = anInputDir + site +"/";
         String outputDir = anOutputDir;
@@ -122,6 +122,7 @@ public class RadarPreProcessor {
         try {
             File[] files = dir.listFiles();
             int counter = 0;
+            int fullCounter = 0;
             if(null != files && files.length > 0) {
                 System.out.println("_files: " + files.length + "\n");
                 for(int i=0; i<files.length; i++) {
@@ -130,6 +131,7 @@ public class RadarPreProcessor {
                     filenameRoot = filename.substring(0, filename.length() - 4);
                     // check if a filtered image already exists - skip then
                     outputPath = outputDir + site +"/" + filenameRoot + "_f";
+                   
                     verify = loadImage(outputPath + ".gif", true);
                     // overwrite always
                     if(overwrite || null == verify) {              
@@ -144,6 +146,13 @@ public class RadarPreProcessor {
                     } else {
                         // file exists
                         System.out.print("+");
+                    }
+                    counter+=1;
+                    fullCounter+=1;
+                    if(counter > 99) {
+                    	counter = 0;
+                    	System.out.println();
+                    	System.out.print(fullCounter + ": ");
                     }
                 }
             } else {
