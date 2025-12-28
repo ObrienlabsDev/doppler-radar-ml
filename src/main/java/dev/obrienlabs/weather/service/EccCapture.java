@@ -275,6 +275,7 @@ public class EccCapture {
     	String targetPathFirst = targetPathRoot + "/" + site;
     	String targetPathLast = Path.of(URI.create(fullUrl).getPath()).getFileName().toString();
     	Path target = Path.of(targetPathRoot + "/" + site, targetPathLast);
+    	StringBuffer vectorString = null;
   
     	// check target already exists - exit if
     	if(Files.exists(target)) {
@@ -317,7 +318,8 @@ public class EccCapture {
 		// process image
     	String processedPath = targetPathRoot + "-processed" + "/" + site + "/" + targetPathLast;
     	if(!Files.exists(Path.of(processedPath))) {
-    		processor.reduceRadarImage(site, targetPathFirst + "/" + targetPathLast, processedPath);
+    		vectorString = new StringBuffer();
+    		processor.reduceRadarImage(site, targetPathFirst + "/" + targetPathLast, processedPath, vectorString);
     	}
 
     }

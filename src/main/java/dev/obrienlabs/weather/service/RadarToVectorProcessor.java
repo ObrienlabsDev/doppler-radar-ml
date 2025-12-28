@@ -57,7 +57,33 @@ public class RadarToVectorProcessor {
             }
         }
     }   
+  
     
+    private void computeFilterWithCectorization(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width) {
+    	int pColor;
+    	int mEnd = mStart + height;
+    	int setPixels = 0;
+    	for (int index = mStart; index < mEnd; index++) {
+            for(int x=0;x<width;x++) {
+                pColor = mSource.getRGB(x, index);
+                boolean nonBlack = false;
+                for(int i=0; i<RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 0; i++) {                   
+                    if(pColor == RadarSite.PRECIP_INTENSITY_COLOR_CODES[i]) {
+                    	// TODO: USE NON-SYNCHRONIZED METHOD for multithreaded use
+                    	mDestination.setRGB(x, index, pColor);
+                    	nonBlack = true;
+                    	setPixels+=1;
+                    	//System.out.print(i+1);
+                        i = RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE; // short circuit for loop
+                    }
+                    if(!nonBlack) {
+                    	//System.out.print("0");
+                    }
+                }
+            }
+        }
+    	System.out.println(setPixels + " set for " + (height * width));
+    } 
 
     
 	private BufferedImage loadImage(String filename) {

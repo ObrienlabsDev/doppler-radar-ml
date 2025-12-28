@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -58,11 +59,20 @@ public class RadarPreProcessor {
 		}
 	}
 	
-    private BufferedImage doFilter(int filter, BufferedImage input, int layer) {
+	private void writeText(StringBuffer vectorString, String filename, String format) {
+		Path file = Paths.get(filename + "." + format);
+	    try {
+	    	Files.writeString(file, vectorString.toString());
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+	
+    private BufferedImage doFilter(int filter, BufferedImage input, int layer, StringBuffer vectorString) {
         int height = input.getHeight();
         BufferedImage croppedImage = new BufferedImage(height, height, BufferedImage.TYPE_INT_RGB);
         
-        computeFilter(input, 0, height, croppedImage, height);
+        computeFilter(input, 0, height, croppedImage, height, vectorString);
         
         // erase red edge box last
         Graphics2D g = croppedImage.createGraphics(); 
@@ -77,8 +87,7 @@ public class RadarPreProcessor {
         return croppedImage;
     }
 
- 
-    private void computeFilter(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width) {
+    private void computeFilterOld(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width) {
     	int pColor;
     	int mEnd = mStart + height;
     	for (int index = mStart; index < mEnd; index++) {
@@ -94,19 +103,52 @@ public class RadarPreProcessor {
             }
         }
     }   
+ 
+    private void computeFilter(BufferedImage mSource, int mStart, int height, BufferedImage mDestination, int width, StringBuffer vectorString) {
+    	int pColor;
+    	int mEnd = mStart + height;
+    	int setPixels = 0;
+    	for (int index = mStart; index < mEnd; index++) {
+            for(int x=0;x<width;x++) {
+                pColor = mSource.getRGB(x, index);
+                boolean nonBlack = false;
+                for(int i=0; i<RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 0; i++) {                   
+                    if(pColor == RadarSite.PRECIP_INTENSITY_COLOR_CODES[i]) {
+                    	// TODO: USE NON-SYNCHRONIZED METHOD for multithreaded use
+                    	mDestination.setRGB(x, index, pColor);
+                    	nonBlack = true;
+                    	setPixels+=1;
+                    	vectorString.append(Integer.toHexString(i + 1));
+                    	System.out.printf("%x", i+1);
+                        i = RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE; // short circuit for loop
+                    }
+                }
+                if(!nonBlack) {
+                	vectorString.append("0");
+                }
+            }
+        }
+    	System.out.println(setPixels + " set for " + (height * width));
+    }   
     
-    public void reduceRadarImage(String site, String anInputFile, String anOutputFile) {
+    
+    public void vectorizeRadarImage(BufferedImage reducedImage) {
+    	
+    	
+    }
+    
+    public void reduceRadarImage(String site, String anInputFile, String anOutputFile, StringBuffer vectorString) {
         BufferedImage input = null;
         BufferedImage reducedImage = null;
         input = loadImage(anInputFile);
-        reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1);
+        reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1, vectorString);
         writeImage(reducedImage, anOutputFile);
         System.out.print(".");
-
     }
     
     public void reduceRadarImages(String site, String anInputDir, String anOutputDir) {
-    	boolean overwrite = false;
+    	boolean overwrite = true;
+    	boolean vectorize = true;
         String filename = null;
         String inputDir = anInputDir + site +"/";
         String outputDir = anOutputDir;
@@ -114,10 +156,13 @@ public class RadarPreProcessor {
         File dir = new File(inputDir);
         String filenameRoot = null;
         String outputPath = null;
+        //String vectorOutputPath = null;
+        StringBuffer vectorString = null;
         BufferedImage input = null;
         BufferedImage verify = null;
         BufferedImage reducedImage = null;
         long filesize = 0;
+        
         System.out.println("_retrieving files from:... " + inputDir);
         try {
             File[] files = dir.listFiles();
@@ -137,15 +182,23 @@ public class RadarPreProcessor {
                     if(overwrite || null == verify) {              
                         input = loadImage(inputDir + filename);
                         if(null != input && filesize > 0) {
-                            reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1);
+                        	vectorString = new StringBuffer();
+                            reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1, vectorString);
                             writeImage(reducedImage, outputPath, "gif");
+                            //writeText(vectorString, outputPath, ".txt");
                             System.out.print(".");
+                            if(vectorize) {
+                            	vectorizeRadarImage(reducedImage);
+                            }
                         } else {
                             System.out.println("\n_Invalid filesize: " + filesize + " :" + filename);
                         }
                     } else {
                         // file exists
                         System.out.print("+");
+                        if(vectorize) {
+                        	vectorizeRadarImage(reducedImage);
+                        }
                     }
                     counter+=1;
                     fullCounter+=1;
