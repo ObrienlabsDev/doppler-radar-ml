@@ -118,8 +118,10 @@ public class RadarPreProcessor {
                     	mDestination.setRGB(x, index, pColor);
                     	nonBlack = true;
                     	setPixels+=1;
-                    	vectorString.append(Integer.toHexString(i + 1));
-                    	System.out.printf("%x", i+1);
+                    	vectorString.append(Integer.toHexString(i));
+                    	//if(i < 1) {
+                    	//System.out.printf("%x", i);
+                    	//}
                         i = RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE; // short circuit for loop
                     }
                 }
@@ -128,7 +130,7 @@ public class RadarPreProcessor {
                 }
             }
         }
-    	System.out.println(setPixels + " set for " + (height * width));
+    	//System.out.println(setPixels + " set for " + (height * width));
     }   
     
     
@@ -185,7 +187,7 @@ public class RadarPreProcessor {
                         	vectorString = new StringBuffer();
                             reducedImage = doFilter(0, input, RadarSite.PRECIP_INTENSITY_COLOR_CODES_SIZE - 1, vectorString);
                             writeImage(reducedImage, outputPath, "gif");
-                            //writeText(vectorString, outputPath, ".txt");
+                            writeText(vectorString, outputPath, ".txt");
                             System.out.print(".");
                             if(vectorize) {
                             	vectorizeRadarImage(reducedImage);
