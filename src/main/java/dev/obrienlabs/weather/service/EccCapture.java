@@ -11,8 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRules;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -75,7 +78,9 @@ public class EccCapture {
 	private static final int RADAR_MIN_POST_UPLOAD_TIME_MIN = 0;//1; // the time between current and last image upload
 	private static final int RADAR_2ND_LAST_INTERVAL_OFFSET_MIN = 6; // get the 2nd last set of 6 min radar images
 	private static final long RADAR_TRAILING_OFFSET_CHECK_GRANULARITY_SEC = 10L;
-	private static int DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR = 5;  // pending TimeZone usage
+	private static final String TIMEZONE = "America/New_York";
+	private static int DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR = 4;  // pending TimeZone usage
+	private static int EST_TO_UTC_INTERVAL_SUBTRACTION_HOUR = 5;  // pending TimeZone usage
 		
     private static final Logger logger = Logger.getLogger(EccCapture.class.getName());
     private final Storage storage;
@@ -117,6 +122,8 @@ public class EccCapture {
     // https://dd.weather.gc.ca/20250829/WXO-DD/radar/CAPPI/GIF/CASAG/202508290000_CASAG_CAPPI_1.5_RAIN.gif
     /**
      * fill in holes with missing images
+     * handle images across 2 dates (RAIN only - not SNOW)
+     * https://dd.weather.gc.ca/20251230/WXO-DD/radar/CAPPI/GIF/CASAG/202512310000_CASAG_CAPPI_1.5_RAIN.gif
      */
     public void reverseCaptureHistoricalFromNow() {
 		LocalDateTime offsetTime = getLocalDateTimeNow();
@@ -149,11 +156,19 @@ public class EccCapture {
 		capture(null);
 	}
 	
+	private int geGMTTimeDifference() {
+        if(ZoneId.of(TIMEZONE).getRules().isDaylightSavings(Instant.now())) {
+        	return DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR;
+        } else {
+        	return EST_TO_UTC_INTERVAL_SUBTRACTION_HOUR;
+        }
+	}
+	
 	private LocalDateTime getLocalDateTimeNow() {
 		// GMT-4 check DST - align to 00+6min intervals for last radar upload, however get 6 min ago (2nd last upload)
 		return LocalDateTime.now()
 				.minusMinutes(RADAR_2ND_LAST_INTERVAL_OFFSET_MIN)
-				.plusHours(DST_TO_UTC_INTERVAL_SUBTRACTION_HOUR);
+				.plusHours(geGMTTimeDifference());
 	}
 	
 	public void capture(String historicalDate) {
@@ -181,19 +196,29 @@ public class EccCapture {
 	// last 2354 interval of today - insert 20250831/WXO-DD above /radar
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/CAPPI/GIF/CASFT/202508312354_CASFT_CAPPI_1.5_RAIN.gif
 	// https://dd.weather.gc.ca/20250831/WXO-DD/radar/DPQPE/GIF/CASFT/20250831T2354Z_MSC_Radar-DPQPE_CASFT_Rain.gif
+    //* handle images across 2 dates
+    //* https://dd.weather.gc.ca/20251230/WXO-DD/radar/CAPPI/GIF/CASAG/202512310000_CASAG_CAPPI_1.5_RAIN.gif
 	private String computePostfixUrl(int siteID, int cappiID, String historicalDate, LocalDateTime offsetTime) {
 		StringBuffer buffer = new StringBuffer();
 		// compute historical URL if requested - up to 30 days previously
-		String formattedDate = null;
+		String formattedDateDir = null;
+		String formattedDateFilename = null;
 		if(null == historicalDate) {
-			formattedDate = offsetTime.format(dateFormatter.get(cappiID));
+			formattedDateDir = offsetTime.format(dateFormatter.get(cappiID));
 		} else {
-			formattedDate = historicalDate;
+			formattedDateDir = historicalDate;
 		}
+		formattedDateFilename = formattedDateDir;
 		String formattedHour = offsetTime.format(hourFormatter.get(cappiID));
-		String sectionFor2354Frame = formattedDate + "/" + HISTORICAL_URL_MIDFIX;
 		String minuteText = getSixMinuteTrailingOffsetMinute(offsetTime.getMinute());
+		//String timeText = "0000";//formattedHour + minuteText;
 		String timeText = formattedHour + minuteText;
+		// handle 0000 in previous day (RAIN only - not SNOW)
+		if(timeText.equalsIgnoreCase("0000")) {
+			formattedDateDir = offsetTime.minusDays(1).format(dateFormatter.get(cappiID));
+			// we can ignore original offsetTime and leave formattedDateFilename unchanged
+		}
+		String sectionFor2354Frame = formattedDateDir + "/" + HISTORICAL_URL_MIDFIX;
 		
 		if(timeText.equalsIgnoreCase("2354")) {
 			buffer.append(sectionFor2354Frame);
@@ -210,7 +235,7 @@ public class EccCapture {
 				.append("CAS")
 				.append(SITE_L2_ID[siteID])
 				.append("/")
-				.append(formattedDate)
+				.append(formattedDateFilename)
 				.append(CAPPI_DPQPE_TIME_T_ID[cappiID])
 				.append(formattedHour)
 				.append(minuteText)
@@ -435,7 +460,7 @@ precif = RAIN
 	public static void main(String[] argv) {
 	
 		EccCapture eccCapture = new EccCapture();
-		eccCapture.capture();
-		//eccCapture.reverseCaptureHistoricalFromNow();
+		//eccCapture.capture();
+		eccCapture.reverseCaptureHistoricalFromNow();
 	}
 }
