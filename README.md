@@ -25,7 +25,7 @@ This project is as much a discovery/relearning exercise on transitioning from 20
 - https://climate.weather.gc.ca/radar/index_e.html
 - https://eccc-msc.github.io/open-data/msc-data/obs_radar/readme_radarimage-datamart_en/
 - https://dd.weather.gc.ca/
-- 
+- example - adjust the date after 30 days - https://dd.weather.gc.ca/today/radar/CAPPI/GIF/CASFT/202601110000_CASFT_CAPPI_1.5_RAIN.gif
 - 
 
 ## Design Issues
